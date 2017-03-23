@@ -16,8 +16,14 @@ package de.rub.nds.ws;
 import de.rub.nds.tlsscanner.report.ProbeResult;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import de.rub.nds.tlsscanner.report.check.TLSCheck;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 /**
  *
@@ -44,7 +50,15 @@ public class JsonResult {
 
         }
         resultBuilder.add("checks", checkBuilder);
+        Map<String, Object> properties = new HashMap<>(1);
+        properties.put(JsonGenerator.PRETTY_PRINTING, true);
+        StringWriter sw = new StringWriter();
+        JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+        JsonWriter jsonWriter = writerFactory.createWriter(sw);
 
-        return resultBuilder.build().toString();
+        jsonWriter.writeObject(resultBuilder.build());
+        jsonWriter.close();
+
+        return sw.toString();
     }
 }
