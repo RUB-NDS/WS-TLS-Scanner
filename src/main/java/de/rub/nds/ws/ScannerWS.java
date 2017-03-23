@@ -15,6 +15,8 @@ package de.rub.nds.ws;
 
 import de.rub.nds.tlsscanner.TLSScanner;
 import de.rub.nds.tlsscanner.report.SiteReport;
+import de.rub.nds.tlsscanner.report.check.CheckConfigCache;
+import java.io.File;
 import java.util.concurrent.ExecutorService;
 import javax.jws.WebService;
 import javax.jws.WebMethod;
@@ -42,9 +44,11 @@ public class ScannerWS {
     @Produces("application/json")
     @Path("{host}")
     public String getJson(@PathParam("host") String host) {
+        CheckConfigCache.getInstance().setPathToConfig(
+                new File("resources/scanner/config_de/"));
         TLSScanner scanner = new TLSScanner(host);
         SiteReport report = scanner.scan();
-        return report.getJsonReport();
+        return new JsonResult(report).getJsonEncoded();
     }
 
 }
