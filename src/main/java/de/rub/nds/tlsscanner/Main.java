@@ -14,6 +14,7 @@ package de.rub.nds.tlsscanner;
  * @author Robert Merget - robert.merget@rub.de
  */
 public class Main {
+
     public static void main(String args[]) {
 
     }
