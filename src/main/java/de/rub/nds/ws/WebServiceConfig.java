@@ -18,10 +18,12 @@ import java.io.Serializable;
  */
 public class WebServiceConfig implements Serializable {
 
-    private boolean useShortTest = false;
-    private Language language = Language.GERMAN;
+    private boolean useShortTest;
+    private Language language;
 
     public WebServiceConfig() {
+        this.language = Language.GERMAN;
+        this.useShortTest = true;
     }
 
     public Language getLanguage() {
