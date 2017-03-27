@@ -1,15 +1,11 @@
 /**
- * TLS-Attacker - A Modular Penetration Testing Framework for TLS
+ *  SIWECOS-TLS-Scanner - A Webservice for the TLS-Scanner Module of TLS-Attacker
  *
- * Copyright 2014-2016 Ruhr University Bochum / Hackmanit GmbH
+ *  Copyright 2014-2017 Ruhr University Bochum / Hackmanit GmbH
  *
- * Licensed under Apache License 2.0
- * http://www.apache.org/licenses/LICENSE-2.0
- */
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ *  Licensed under Apache License 2.0
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
  */
 package de.rub.nds.ws;
 
@@ -32,8 +28,9 @@ import javax.json.stream.JsonGenerator;
 public class JsonResult {
 
     private SiteReport report;
+    private boolean shortLayout;
 
-    public JsonResult(SiteReport report) {
+    public JsonResult(SiteReport report, boolean shortLayout) {
         this.report = report;
     }
 
@@ -41,13 +38,25 @@ public class JsonResult {
         JsonObjectBuilder resultBuilder = Json.createObjectBuilder();
         JsonObjectBuilder checkBuilder = Json.createObjectBuilder();
         for (ProbeResult result : report.getResultList()) {
-            for (TLSCheck check : result.getCheckList()) {
+            if (!shortLayout) {
+                for (TLSCheck check : result.getCheckList()) {
+                    JsonObjectBuilder singleCheckBuilder = Json.createObjectBuilder();
+                    if (check != null) {
+                        if (check.isTransparentIfPassed() && !check.isResult()) {
+                            continue;
+                        }
+                        singleCheckBuilder.add("result", check.isResult());
+                        singleCheckBuilder.add("description", check.getDescription());
+                        checkBuilder.add(check.getName(), singleCheckBuilder);
+                    }
+                }
+            } else {
                 JsonObjectBuilder singleCheckBuilder = Json.createObjectBuilder();
-                singleCheckBuilder.add("result", check.isResult());
-                singleCheckBuilder.add("description", check.getDescription());
-                checkBuilder.add(check.getName(), singleCheckBuilder);
-            }
+                singleCheckBuilder.add("result", !result.hasFailedCheck());
+                singleCheckBuilder.add("description", result.getFailedReasons());
+                checkBuilder.add(result.getProbeName(), singleCheckBuilder);
 
+            }
         }
         resultBuilder.add("checks", checkBuilder);
         Map<String, Object> properties = new HashMap<>(1);
