@@ -32,6 +32,7 @@ public class JsonResult {
 
     public JsonResult(SiteReport report, boolean shortLayout) {
         this.report = report;
+        this.shortLayout = shortLayout;
     }
 
     public String getJsonEncoded() {
