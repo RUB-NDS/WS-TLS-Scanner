@@ -18,20 +18,12 @@
         <dependency>
             <groupId>de.rub.nds.tlsattacker</groupId>
             <artifactId>TLS-Core</artifactId>
-            <version>2.0Beta1</version>
-            <type>jar</type>
+            <version>2.0Beta2</version>
         </dependency>
         <dependency>
-            <groupId>de.rub.nds.tlsattacker</groupId>
-            <artifactId>Transport</artifactId>
-            <version>2.0Beta1</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>de.rub.nds.tlsattacker</groupId>
             <artifactId>TLS-Scanner</artifactId>
-            <version>2.0Beta1</version>
-            <type>jar</type>
+            <groupId>de.rub.nds</groupId>
+            <version>2.0Beta2</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -49,7 +41,6 @@
             <artifactId>jersey-media-moxy</artifactId>
             <version>2.25</version>
         </dependency>
-        
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-processing</artifactId>
@@ -104,6 +95,12 @@
             <version>1.53</version>
         </dependency>
         <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <version>2.0.1</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>7.0</version>
@@ -115,11 +112,49 @@
             <version>1.0.2</version>
         </dependency>
     </dependencies>
-
-
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>2.6</version>
+                    <configuration>
+                        <finalName>SIWECOS-TLS-Scanner-${project.version}</finalName> 
+                        <outputDirectory>${project.parent.basedir}</outputDirectory>
+                        <archive>
+                            <manifest>
+                                <addClasspath>true</addClasspath>
+                            </manifest>
+                        </archive>
+                        <descriptorRefs>
+                            <descriptorRef>war-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                        <appendAssemblyId>false</appendAssemblyId>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                            <phase>package</phase> <!-- bind to the packaging phase -->
+                            <goals>
+                                <goal>single</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>3.0.0</version>
+                    <configuration>
+                        <filesets>
+                            <fileset>
+                                <directory>${project.parent.basedir}</directory>
+                                <includes>
+                                    <include>SIWECOS-TLS-Scanner-${project.version}</include>
+                                </includes>
+                            </fileset>
+                        </filesets>
+                    </configuration>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
