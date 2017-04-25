@@ -7,7 +7,7 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-package de.rub.nds.tlsscanner;
+package de.rub.nds.siwecos.tls;
 
 /**
  *

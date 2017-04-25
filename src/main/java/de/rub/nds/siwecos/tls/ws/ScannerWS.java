@@ -7,7 +7,7 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-package de.rub.nds.ws;
+package de.rub.nds.siwecos.tls.ws;
 
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
@@ -28,7 +28,7 @@ import javax.xml.bind.JAXB;
  *
  * @author Robert Merget - robert.merget@rub.de
  */
-@Path("ScannerWS")
+@Path("SIWECOS-TLS-Scanner")
 public class ScannerWS {
 
     @Context

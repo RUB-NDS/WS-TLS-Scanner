@@ -7,7 +7,7 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-package de.rub.nds.tlsscanner;
+package de.rub.nds.siwecos.tls;
 
 import java.util.Set;
 import javax.ws.rs.core.Application;
@@ -29,7 +29,7 @@ public class ApplicationConfig extends Application {
      * out calling this method in getClasses().
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(de.rub.nds.ws.ScannerWS.class);
+        resources.add(de.rub.nds.siwecos.tls.ws.ScannerWS.class);
     }
 
 }

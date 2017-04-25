@@ -7,7 +7,7 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-package de.rub.nds.ws;
+package de.rub.nds.siwecos.tls.ws;
 
 import de.rub.nds.tlsscanner.config.Language;
 import java.io.Serializable;

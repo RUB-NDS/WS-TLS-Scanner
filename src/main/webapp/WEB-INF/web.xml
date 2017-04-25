@@ -1,0 +1,17 @@
+<web-app>
+	<init-param>
+		<param-name>
+			javax.ws.rs.Application
+		</param-name>
+		<param-value>
+			de.rub.nds.siwecos.tls.ApplicationConfig
+		</param-value>
+	</init-param>
+    <servlet>
+        <servlet-name>de.rub.nds.siwecos.tls.ApplicationConfig</servlet-name>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>de.rub.nds.siwecos.tls.ApplicationConfig</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>
