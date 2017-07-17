@@ -47,8 +47,16 @@ public class JsonResult {
                             continue;
                         }
                         singleCheckBuilder.add("result", check.isResult());
-                        singleCheckBuilder.add("description", check.getDescription());
-                        checkBuilder.add(check.getName(), singleCheckBuilder);
+                        // singleCheckBuilder.add("description",
+                        // check.getDescription());
+                        if (check.isResult()) {
+                            singleCheckBuilder.add("risk", check.getScore());
+
+                        } else {
+                            singleCheckBuilder.add("risk", 0);
+
+                        }
+                        checkBuilder.add(check.getType().name(), singleCheckBuilder);
                     }
                 }
             } else {
