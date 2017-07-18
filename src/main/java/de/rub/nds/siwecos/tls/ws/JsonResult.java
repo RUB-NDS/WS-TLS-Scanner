@@ -39,32 +39,21 @@ public class JsonResult {
         JsonObjectBuilder resultBuilder = Json.createObjectBuilder();
         JsonObjectBuilder checkBuilder = Json.createObjectBuilder();
         for (ProbeResult result : report.getResultList()) {
-            if (!shortLayout) {
-                for (TLSCheck check : result.getCheckList()) {
-                    JsonObjectBuilder singleCheckBuilder = Json.createObjectBuilder();
-                    if (check != null) {
-                        if (check.isTransparentIfPassed() && !check.isResult()) {
-                            continue;
-                        }
-                        singleCheckBuilder.add("result", check.isResult());
-                        // singleCheckBuilder.add("description",
-                        // check.getDescription());
-                        if (check.isResult()) {
-                            singleCheckBuilder.add("risk", check.getScore());
-
-                        } else {
-                            singleCheckBuilder.add("risk", 0);
-
-                        }
-                        checkBuilder.add(check.getType().name(), singleCheckBuilder);
-                    }
-                }
-            } else {
+            for (TLSCheck check : result.getCheckList()) {
                 JsonObjectBuilder singleCheckBuilder = Json.createObjectBuilder();
-                singleCheckBuilder.add("result", !result.hasFailedCheck());
-                singleCheckBuilder.add("description", result.getFailedReasons());
-                checkBuilder.add(result.getProbeName(), singleCheckBuilder);
+                if (check != null) {
+                    singleCheckBuilder.add("result", check.isResult());
+                    // singleCheckBuilder.add("description",
+                    // check.getDescription());
+                    if (check.isResult()) {
+                        singleCheckBuilder.add("risk", check.getScore());
 
+                    } else {
+                        singleCheckBuilder.add("risk", 0);
+
+                    }
+                    checkBuilder.add(check.getType().name(), singleCheckBuilder);
+                }
             }
         }
         resultBuilder.add("checks", checkBuilder);

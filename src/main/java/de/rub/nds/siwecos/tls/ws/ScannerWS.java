@@ -41,7 +41,6 @@ public class ScannerWS {
         InputStream stream = ScannerWS.class.getResourceAsStream("/default.xml");
         WebServiceConfig config = JAXB.unmarshal(stream, WebServiceConfig.class);
         ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
-        scannerConfig.setLanguage(config.getLanguage());
         ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
         delegate.setHost(host);
         TLSScanner scanner = new TLSScanner(scannerConfig);
