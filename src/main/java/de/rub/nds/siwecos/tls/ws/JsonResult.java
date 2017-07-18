@@ -27,12 +27,10 @@ import javax.json.stream.JsonGenerator;
  */
 public class JsonResult {
 
-    private SiteReport report;
-    private boolean shortLayout;
-
-    public JsonResult(SiteReport report, boolean shortLayout) {
+    private final SiteReport report;
+    
+    public JsonResult(SiteReport report) {
         this.report = report;
-        this.shortLayout = shortLayout;
     }
 
     public String getJsonEncoded() {

@@ -39,13 +39,12 @@ public class ScannerWS {
     @Path("{host}")
     public String getJson(@PathParam("host") String host) throws URISyntaxException {
         InputStream stream = ScannerWS.class.getResourceAsStream("/default.xml");
-        WebServiceConfig config = JAXB.unmarshal(stream, WebServiceConfig.class);
         ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
         ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
         delegate.setHost(host);
         TLSScanner scanner = new TLSScanner(scannerConfig);
         SiteReport report = scanner.scan();
-        return new JsonResult(report, config.isUseShortTest()).getJsonEncoded();
+        return new JsonResult(report).getJsonEncoded();
     }
 
 }
