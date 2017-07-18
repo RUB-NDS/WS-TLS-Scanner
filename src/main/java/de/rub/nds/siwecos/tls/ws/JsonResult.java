@@ -28,7 +28,7 @@ import javax.json.stream.JsonGenerator;
 public class JsonResult {
 
     private final SiteReport report;
-    
+
     public JsonResult(SiteReport report) {
         this.report = report;
     }
