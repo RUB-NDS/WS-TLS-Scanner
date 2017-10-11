@@ -92,7 +92,7 @@ An example output may look like this:
 }
 ```
 
-
+For more information on the interpretation of this output checkout the [TLS-Scanner](https://github.com/RUB-NDS/TLS-Scanner) repository.
 
 **Please note:**  *A check with a _result_ of true is considered non optimal*
 
