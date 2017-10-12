@@ -12,6 +12,8 @@ $ ./mvnw clean package
 
 For hints on installing the required libraries checkout the corresponding GitHub repositories.
 
+**Please note:**  *In order to run this tool you need TLS-Attacker version 2.0Beta4*
+
 # Running
 In order to run SIWECOS-TLS-Scanner you need to deploy the .war file from the target/ folder to your favourite java application server (eg. Glassfish, Tomcat ...). After that the webservice should be up and running and can be called with:
 
