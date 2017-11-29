@@ -38,7 +38,6 @@ public class ScannerWS {
     @Produces("application/json;charset=utf-8")
     @Path("{host}")
     public String getJson(@PathParam("host") String host) throws URISyntaxException {
-        InputStream stream = ScannerWS.class.getResourceAsStream("/default.xml");
         ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
         ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
         delegate.setHost(host);
