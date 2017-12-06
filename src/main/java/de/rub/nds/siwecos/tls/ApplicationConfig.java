@@ -12,7 +12,7 @@ package de.rub.nds.siwecos.tls;
 import java.util.Set;
 import javax.ws.rs.core.Application;
 
-@javax.ws.rs.ApplicationPath("webresources")
+@javax.ws.rs.ApplicationPath("/")
 public class ApplicationConfig extends Application {
 
     @Override

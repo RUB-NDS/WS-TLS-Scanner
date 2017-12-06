@@ -9,41 +9,43 @@
  */
 package de.rub.nds.siwecos.tls.ws;
 
-import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
-import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
-import de.rub.nds.tlsscanner.TLSScanner;
-import de.rub.nds.tlsscanner.config.ScannerConfig;
-import de.rub.nds.tlsscanner.report.SiteReport;
-import java.io.InputStream;
+import de.rub.nds.siwecos.tls.TlsScannerCallback;
 import java.net.URISyntaxException;
-import javax.ws.rs.GET;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import javax.xml.bind.JAXB;
 
 /**
  *
  * @author Robert Merget - robert.merget@rub.de
  */
-@Path("SIWECOS-TLS-Scanner")
+@Path("/")
+@Consumes(MediaType.APPLICATION_JSON)
 public class ScannerWS {
 
     @Context
     private UriInfo context;
 
-    @GET
-    @Produces("application/json;charset=utf-8")
-    @Path("{host}")
-    public String getJson(@PathParam("host") String host) throws URISyntaxException {
-        ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
-        ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
-        delegate.setHost(host);
-        TLSScanner scanner = new TLSScanner(scannerConfig);
-        SiteReport report = scanner.scan();
-        return new JsonResult(report).getJsonEncoded();
+    private ExecutorService service;
+
+    public ScannerWS() {
+        service = new ThreadPoolExecutor(2, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>());
+    }
+
+    @POST
+    @Path("/start")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startScan(ScanRequest request) throws URISyntaxException {
+        service.submit(new TlsScannerCallback(request));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
     }
 
 }
