@@ -9,9 +9,9 @@
  */
 package de.rub.nds.siwecos.tls.ws;
 
-import de.rub.nds.tlsscanner.report.ProbeResult;
+import de.rub.nds.tlsscanner.report.result.ProbeResult;
 import de.rub.nds.tlsscanner.report.SiteReport;
-import de.rub.nds.tlsscanner.report.check.TLSCheck;
+import de.rub.nds.tlsscanner.report.check.TlsCheck;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class JsonResult {
         JsonObjectBuilder resultBuilder = Json.createObjectBuilder();
         JsonObjectBuilder checkBuilder = Json.createObjectBuilder();
         for (ProbeResult result : report.getResultList()) {
-            for (TLSCheck check : result.getCheckList()) {
+            for (TlsCheck check : result.getCheckList()) {
                 JsonObjectBuilder singleCheckBuilder = Json.createObjectBuilder();
                 if (check != null) {
                     singleCheckBuilder.add("result", check.isResult());

@@ -1,19 +1,10 @@
-/**
- *  SIWECOS-TLS-Scanner - A Webservice for the TLS-Scanner Module of TLS-Attacker
- *
- *  Copyright 2014-2017 Ruhr University Bochum / Hackmanit GmbH
- *
- *  Licensed under Apache License 2.0
- *  http://www.apache.org/licenses/LICENSE-2.0
- *
- */
 package de.rub.nds.siwecos.tls;
 
 import de.rub.nds.siwecos.tls.ws.JsonResult;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
-import de.rub.nds.tlsscanner.TLSScanner;
+import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import java.io.IOException;
@@ -43,10 +34,10 @@ public class TlsScannerCallback implements Runnable {
     @Override
     public void run() {
         ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
+        scannerConfig.setDangerLevel(request.getDangerLevel());
         ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
         delegate.setHost(request.getUrl());
-
-        TLSScanner scanner = new TLSScanner(scannerConfig);
+        TlsScanner scanner = new TlsScanner(scannerConfig);
         SiteReport report = scanner.scan();
         JsonResult result = new JsonResult(report);
         answer(result);
