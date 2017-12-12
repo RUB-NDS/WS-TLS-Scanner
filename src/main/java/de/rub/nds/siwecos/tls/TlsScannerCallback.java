@@ -78,6 +78,7 @@ public class TlsScannerCallback implements Runnable {
                 URL url = new URL(callback);
                 URLConnection con = url.openConnection();
                 HttpURLConnection http = (HttpURLConnection) con;
+                con.setDoOutput(true);
                 http.setRequestMethod("POST");
                 http.setChunkedStreamingMode(4096);
                 http.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -107,6 +108,18 @@ public class TlsScannerCallback implements Runnable {
         resultList.add(getCipherSuiteOrder(report));
         resultList.add(getSupportsSsl2(report));
         resultList.add(getSupportsSsl3(report));
+        resultList.add(getBleichenbacherVulnerable(report));
+        resultList.add(getCrimeVulnerable(report));
+        resultList.add(getHeartbleedVulnerable(report));
+        resultList.add(getInvalidCurveEphemeralVulnerable(report));
+        resultList.add(getInvalidCurveVulnerable(report));
+        resultList.add(getPaddingOracleVulnerable(report));
+        resultList.add(getPoodleVulnerable(report));
+        resultList.add(getTlsPoodleVulnerable(report));
+        resultList.add(getSupportsDes(report));
+        resultList.add(getSupportsTls13(report));
+        resultList.add(getSweet32Vulnerable(report));
+
         int lowest = 100;
         boolean hasError = false;
         for (TestResult result : resultList) {
@@ -238,4 +251,79 @@ public class TlsScannerCallback implements Runnable {
                 report.getSupportsSsl3() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsSsl3() == Boolean.TRUE) ? "success" : "critical", null);
     }
+
+    private TestResult getBleichenbacherVulnerable(SiteReport report) {
+        return new TestResult("BLEICHENBACHER_VULNERABLE", report.getBleichenbacherVulnerable() == null, null,
+                report.getBleichenbacherVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getBleichenbacherVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getPaddingOracleVulnerable(SiteReport report) {
+        return new TestResult("PADDING_ORACLE_VULNERABLE", report.getPaddingOracleVulnerable() == null, null,
+                report.getPaddingOracleVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getPaddingOracleVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getInvalidCurveVulnerable(SiteReport report) {
+        return new TestResult("INVALID_CURVE_VULNERABLE", report.getInvalidCurveVulnerable() == null, null,
+                report.getInvalidCurveVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getInvalidCurveVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getInvalidCurveEphemeralVulnerable(SiteReport report) {
+        return new TestResult("INVALID_CURVE_EPHEMERAL_VULNERABLE",
+                report.getInvalidCurveEphermaralVulnerable() == null, null,
+                report.getInvalidCurveEphermaralVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getInvalidCurveEphermaralVulnerable() == Boolean.TRUE) ? "success" : "warning", null);
+    }
+
+    private TestResult getPoodleVulnerable(SiteReport report) {
+        return new TestResult("POODLE_VULNERABLE", report.getPoodleVulnerable() == null, null,
+                report.getPoodleVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getPoodleVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getTlsPoodleVulnerable(SiteReport report) {
+        return new TestResult("TLS_POODLE_VULNERABLE", report.getTlsPoodleVulnerable() == null, null,
+                report.getTlsPoodleVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getTlsPoodleVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getCrimeVulnerable(SiteReport report) {
+        return new TestResult("CRIME_VULNERABLE", report.getCrimeVulnerable() == null, null,
+                report.getCrimeVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getCrimeVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getSweet32Vulnerable(SiteReport report) {
+        return new TestResult("SWEET32_VULNERABLE", report.getSweet32Vulnerable() == null, null,
+                report.getSweet32Vulnerable() == Boolean.TRUE ? 80 : 100,
+                !(report.getSweet32Vulnerable() == Boolean.TRUE) ? "success" : "warning", null);
+    }
+
+    private TestResult getHeartbleedVulnerable(SiteReport report) {
+        return new TestResult("HEARTBLEED_VULNERABLE", report.getHeartbleedVulnerable() == null, null,
+                report.getHeartbleedVulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getHeartbleedVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+
+    private TestResult getSupportsTls13(SiteReport report) {
+        return new TestResult("PROTOCOLVERSION_TLS13", report.supportsAnyTls13() == null, null,
+                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0, "bonus", null);
+    }
+
+    private TestResult getSupportsDes(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        List<CipherSuite> suiteList = new LinkedList<>();
+        for (CipherSuite suite : report.getCipherSuites()) {
+            if (suite.name().toUpperCase().contains("_DES")) {
+                suiteList.add(suite);
+            }
+        }
+        messageList.add(new TranslateableMessage("DES_SUITES", suiteList));
+        return new TestResult("CIPHERSUITE_DES", report.getSupportsDesCiphers() == null, null,
+                report.getSupportsDesCiphers() == Boolean.TRUE ? 0 : 100,
+                !(report.getSupportsDesCiphers() == Boolean.TRUE) ? "success" : "warning", messageList);
+    }
+
 }
