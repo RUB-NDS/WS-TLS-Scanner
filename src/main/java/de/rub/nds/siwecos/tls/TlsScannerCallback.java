@@ -21,6 +21,7 @@ import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
+import de.rub.nds.tlsscanner.constants.ProbeType;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -96,29 +97,54 @@ public class TlsScannerCallback implements Runnable {
         List<TestResult> resultList = new LinkedList<>();
         resultList.add(getHttpsResponse(report));
         resultList.add(getHttpsSupported(report));
-        resultList.add(getCertificateExpired(report));
-        resultList.add(getCertificateNotValidYet(report));
-        resultList.add(getCertificateNotSentByServer(report));
-        resultList.add(getCertificateWeakHashFunction(report));
-        resultList.add(getCertificateWeakSignAlgorithm(report));
-        resultList.add(getSupportsAnon(report));
-        resultList.add(getSupportsExport(report));
-        resultList.add(getSupportsNull(report));
-        resultList.add(getSupportsRc4(report));
-        resultList.add(getCipherSuiteOrder(report));
-        resultList.add(getSupportsSsl2(report));
-        resultList.add(getSupportsSsl3(report));
-        resultList.add(getBleichenbacherVulnerable(report));
-        resultList.add(getCrimeVulnerable(report));
-        resultList.add(getHeartbleedVulnerable(report));
-        resultList.add(getInvalidCurveEphemeralVulnerable(report));
-        resultList.add(getInvalidCurveVulnerable(report));
-        resultList.add(getPaddingOracleVulnerable(report));
-        resultList.add(getPoodleVulnerable(report));
-        resultList.add(getTlsPoodleVulnerable(report));
-        resultList.add(getSupportsDes(report));
-        resultList.add(getSupportsTls13(report));
-        resultList.add(getSweet32Vulnerable(report));
+        if (report.getProbeTypeList().contains(ProbeType.CERTIFICATE)) {
+            resultList.add(getCertificateExpired(report));
+            resultList.add(getCertificateNotValidYet(report));
+            resultList.add(getCertificateNotSentByServer(report));
+            resultList.add(getCertificateWeakHashFunction(report));
+            resultList.add(getCertificateWeakSignAlgorithm(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.CIPHERSUITE)) {
+            resultList.add(getSupportsAnon(report));
+            resultList.add(getSupportsExport(report));
+            resultList.add(getSupportsNull(report));
+            resultList.add(getSupportsRc4(report));
+            resultList.add(getSupportsDes(report));
+            resultList.add(getSweet32Vulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.CIPHERSUITE_ORDER)) {
+            resultList.add(getCipherSuiteOrder(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.PROTOCOL_VERSION)) {
+            resultList.add(getSupportsSsl2(report));
+            resultList.add(getSupportsSsl3(report));
+            resultList.add(getSupportsTls13(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.BLEICHENBACHER)) {
+            resultList.add(getBleichenbacherVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.COMPRESSIONS)) {
+            resultList.add(getCrimeVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.HEARTBLEED)) {
+            resultList.add(getHeartbleedVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.INVALID_CURVE)) {
+            resultList.add(getInvalidCurveEphemeralVulnerable(report));
+            resultList.add(getInvalidCurveVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.PADDING_ORACLE)) {
+            resultList.add(getPaddingOracleVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.POODLE)) {
+            resultList.add(getPoodleVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.TLS_POODLE)) {
+            resultList.add(getTlsPoodleVulnerable(report));
+        }
+        if (report.getProbeTypeList().contains(ProbeType.CVE20162107)) {
+            resultList.add(getCve20162107Vulnerable(report));
+        }
 
         int lowest = 100;
         boolean hasError = false;
@@ -147,7 +173,7 @@ public class TlsScannerCallback implements Runnable {
     private TestResult getCertificateExpired(SiteReport report) {
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", null);
+                : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
@@ -276,6 +302,12 @@ public class TlsScannerCallback implements Runnable {
         return new TestResult("INVALID_CURVE_VULNERABLE", report.getInvalidCurveVulnerable() == null, null,
                 report.getInvalidCurveVulnerable() == Boolean.TRUE ? 0 : 100,
                 !(report.getInvalidCurveVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+    }
+    
+    private TestResult getCve20162107Vulnerable(SiteReport report) {
+        return new TestResult("CVE20162107_VULNERABLE", report.getCve20162107Vulnerable()== null, null,
+                report.getCve20162107Vulnerable() == Boolean.TRUE ? 0 : 100,
+                !(report.getCve20162107Vulnerable() == Boolean.TRUE) ? "success" : "critical", null);
     }
 
     private TestResult getInvalidCurveEphemeralVulnerable(SiteReport report) {

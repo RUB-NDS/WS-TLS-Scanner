@@ -17,16 +17,15 @@ package de.rub.nds.siwecos.tls;
 import de.rub.nds.siwecos.tls.json.ScanResult;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
+import de.rub.nds.tlsscanner.constants.ProbeType;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedList;
 import org.bouncycastle.crypto.tls.Certificate;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
  *
@@ -44,7 +43,7 @@ public class TlsScannerCallbackTest {
     @Before
     public void setUp() {
         callback = new TlsScannerCallback(new ScanRequest("localhost", 4433, new String[] { "127.0.0.1:8080" }));
-        SiteReport report = new SiteReport("google.de");
+        SiteReport report = new SiteReport("google.de", new LinkedList<ProbeType>());
         report.setCertificate(Certificate.EMPTY_CHAIN);
         report.setCipherSuites(new ArrayList<>(Arrays.asList(CipherSuite.values())));
         for (Field field : report.getClass().getDeclaredFields()) {
