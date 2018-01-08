@@ -186,10 +186,18 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("ANON_SUITES", suiteList));
+        messageList.add(new TranslateableMessage("ANON_SUITES", convertSuiteList(suiteList)));
         return new TestResult("CIPHERSUITE_ANON", report.getSupportsAnonCiphers() == null, null,
                 report.getSupportsAnonCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsAnonCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
+    }
+
+    private String convertSuiteList(List<CipherSuite> suiteList) {
+        StringBuilder builder = new StringBuilder();
+        for (CipherSuite suite : suiteList) {
+            builder.append(suite.name()).append(" ");
+        }
+        return builder.toString().trim();
     }
 
     private TestResult getSupportsExport(SiteReport report) {
@@ -200,7 +208,7 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("EXPORT_SUITES", suiteList));
+        messageList.add(new TranslateableMessage("EXPORT_SUITES", convertSuiteList(suiteList)));
         return new TestResult("CIPHERSUITE_EXPORT", report.getSupportsExportCiphers() == null, null,
                 report.getSupportsExportCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsExportCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
@@ -214,7 +222,7 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("NULL_SUITES", suiteList));
+        messageList.add(new TranslateableMessage("NULL_SUITES", convertSuiteList(suiteList)));
         return new TestResult("CIPHERSUITE_NULL", report.getSupportsNullCiphers() == null, null,
                 report.getSupportsNullCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsNullCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
@@ -228,7 +236,7 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("RC4_SUITES", suiteList));
+        messageList.add(new TranslateableMessage("RC4_SUITES", convertSuiteList(suiteList)));
         return new TestResult("CIPHERSUITE_RC4", report.getSupportsRc4Ciphers() == null, null,
                 report.getSupportsRc4Ciphers() == Boolean.TRUE ? 30 : 100,
                 !(report.getSupportsRc4Ciphers() == Boolean.TRUE) ? "success" : "warning", messageList);
@@ -320,7 +328,7 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("DES_SUITES", suiteList));
+        messageList.add(new TranslateableMessage("DES_SUITES", convertSuiteList(suiteList)));
         return new TestResult("CIPHERSUITE_DES", report.getSupportsDesCiphers() == null, null,
                 report.getSupportsDesCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsDesCiphers() == Boolean.TRUE) ? "success" : "warning", messageList);

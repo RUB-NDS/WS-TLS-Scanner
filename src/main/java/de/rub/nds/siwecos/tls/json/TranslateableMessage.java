@@ -22,9 +22,9 @@ public class TranslateableMessage {
 
     private String placeholder;
 
-    private Object values;
+    private String values;
 
-    public TranslateableMessage(String placeholder, Object values) {
+    public TranslateableMessage(String placeholder, String values) {
         this.placeholder = placeholder;
         this.values = values;
     }
@@ -37,11 +37,11 @@ public class TranslateableMessage {
         this.placeholder = placeholder;
     }
 
-    public Object getValues() {
+    public String getValues() {
         return values;
     }
 
-    public void setValues(Object values) {
+    public void setValues(String values) {
         this.values = values;
     }
 }
