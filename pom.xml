@@ -48,6 +48,11 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.26-b03</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-multipart</artifactId>
             <version>2.26-b03</version>
         </dependency>
@@ -105,16 +110,6 @@
             <artifactId>javaee-web-api</artifactId>
             <version>8.0</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.1.2</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-json-jackson</artifactId>
-            <version>2.26-b03</version>
         </dependency>
     </dependencies>
     <build>
