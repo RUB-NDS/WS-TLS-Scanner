@@ -1,8 +1,8 @@
-# SIWECOS-TLS-Scanner
-SIWECOS-TLS-Scanner is a Webservice created by the Chair for Network and Data Security from the Ruhr-University Bochum for the integration of the [TLS-Scanner](https://github.com/RUB-NDS/TLS-Scanner) in the SIWECOS Project. The Webservice scans a provided URL for various TLS misconfigurations and responds with a JSON report.
+# WS-TLS-Scanner
+WS-TLS-Scanner is a Webservice created by the Chair for Network and Data Security from the Ruhr-University Bochum for the integration of the [TLS-Scanner](https://github.com/RUB-NDS/TLS-Scanner) in the SIWECOS Project. The Webservice scans a provided URL for various TLS misconfigurations and responds with a JSON report.
 
 # Compiling
-In order to compile and use SIWECOS-TLS-Scanner, you need to have Java installed, as well as [TLS-Attacker](https://github.com/RUB-NDS/TLS-Attacker), [ModifiableVariables](https://github.com/RUB-NDS/ModifiableVariable) and the [TLS-Scanner](https://github.com/RUB-NDS/TLS-Scanner)
+In order to compile and use WS-TLS-Scanner, you need to have Java installed, as well as [TLS-Attacker](https://github.com/RUB-NDS/TLS-Attacker), [ModifiableVariables](https://github.com/RUB-NDS/ModifiableVariable) and the [TLS-Scanner](https://github.com/RUB-NDS/TLS-Scanner)
 
 ```bash
 $ cd TLS-Scanner
@@ -12,7 +12,7 @@ $ ./mvnw clean package
 
 For hints on installing the required libraries checkout the corresponding GitHub repositories.
 
-**Please note:**  *In order to run this tool you need TLS-Attacker version 2.0Beta4*
+**Please note:**  *In order to run this tool you need TLS-Attacker 2.3*
 
 # Running
 In order to run WS-TLS-Scanner you need to deploy the .war file from the target/ folder to your favourite java application server (eg. Glassfish, Tomcat ...). After that the webservice should be up and running and can be called by sending a POST like
