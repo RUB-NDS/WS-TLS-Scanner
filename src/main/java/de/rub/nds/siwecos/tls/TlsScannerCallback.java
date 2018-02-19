@@ -75,6 +75,7 @@ public class TlsScannerCallback implements Runnable {
     public void answer(ScanResult result) {
         String json = scanResultToJson(result);
         for (String callback : request.getCallbackurls()) {
+            LOGGER.info("Calling back: " + callback + " for " + result.getName());
             try {
                 URL url = new URL(callback);
                 URLConnection con = url.openConnection();
@@ -174,7 +175,7 @@ public class TlsScannerCallback implements Runnable {
     private TestResult getCertificateExpired(SiteReport report) {
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", null);
+                : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
