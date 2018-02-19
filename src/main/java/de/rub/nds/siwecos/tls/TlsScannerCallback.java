@@ -50,6 +50,7 @@ public class TlsScannerCallback implements Runnable {
 
     @Override
     public void run() {
+        LOGGER.info("Scanning: " + request.getUrl());
         ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
         scannerConfig.setDangerLevel(request.getDangerLevel());
         ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
