@@ -11,10 +11,6 @@ package de.rub.nds.siwecos.tls.ws;
 
 import de.rub.nds.siwecos.tls.TlsScannerCallback;
 import java.net.URISyntaxException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -32,16 +28,12 @@ import org.apache.logging.log4j.LogManager;
 @Consumes(MediaType.APPLICATION_JSON)
 public class ScannerWS {
 
-    protected static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(ScannerWS.class
-            .getName());
+    protected static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(ScannerWS.class.getName());
 
     @Context
     private UriInfo context;
 
-    private ExecutorService service;
-
     public ScannerWS() {
-        service = new ThreadPoolExecutor(2, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>());
     }
 
     @POST
@@ -49,8 +41,7 @@ public class ScannerWS {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response startScan(ScanRequest request) throws URISyntaxException {
         LOGGER.info("Received a request to scan: " + request.getUrl());
-        service.submit(new TlsScannerCallback(request));
+        PoolManager.getInstance().getService().submit(new TlsScannerCallback(request));
         return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
     }
-
 }

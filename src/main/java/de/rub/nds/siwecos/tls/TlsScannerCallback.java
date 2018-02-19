@@ -51,15 +51,21 @@ public class TlsScannerCallback implements Runnable {
     @Override
     public void run() {
         LOGGER.info("Scanning: " + request.getUrl());
-        ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
-        scannerConfig.setDangerLevel(request.getDangerLevel());
-        ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
-        delegate.setHost(request.getUrl());
-        TlsScanner scanner = new TlsScanner(scannerConfig);
-        SiteReport report = scanner.scan();
-        ScanResult result = reportToScanResult(report);
-        LOGGER.info("Finished scanning: " + request.getUrl());
-        answer(result);
+        try {
+
+            ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
+            scannerConfig.setDangerLevel(request.getDangerLevel());
+            ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
+            delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
+            TlsScanner scanner = new TlsScanner(scannerConfig);
+            SiteReport report = scanner.scan();
+            ScanResult result = reportToScanResult(report);
+            LOGGER.info("Finished scanning: " + request.getUrl());
+            answer(result);
+        } catch (Throwable T) {
+            LOGGER.warn("Failed to scan:" + request.getUrl());
+            T.printStackTrace();
+        }
     }
 
     public String scanResultToJson(ScanResult result) {
