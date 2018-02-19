@@ -87,6 +87,7 @@ public class TlsScannerCallback implements Runnable {
                 try (OutputStream os = http.getOutputStream()) {
                     os.write(json.getBytes(Charset.forName("UTF-8")));
                 }
+                http.disconnect();
             } catch (IOException ex) {
                 LOGGER.warn("Failed to callback:" + callback, ex);
             }
@@ -173,7 +174,7 @@ public class TlsScannerCallback implements Runnable {
     private TestResult getCertificateExpired(SiteReport report) {
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                : "critical", null);
+                        : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
@@ -303,9 +304,9 @@ public class TlsScannerCallback implements Runnable {
                 report.getInvalidCurveVulnerable() == Boolean.TRUE ? 0 : 100,
                 !(report.getInvalidCurveVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
     }
-    
+
     private TestResult getCve20162107Vulnerable(SiteReport report) {
-        return new TestResult("CVE20162107_VULNERABLE", report.getCve20162107Vulnerable()== null, null,
+        return new TestResult("CVE20162107_VULNERABLE", report.getCve20162107Vulnerable() == null, null,
                 report.getCve20162107Vulnerable() == Boolean.TRUE ? 0 : 100,
                 !(report.getCve20162107Vulnerable() == Boolean.TRUE) ? "success" : "critical", null);
     }
