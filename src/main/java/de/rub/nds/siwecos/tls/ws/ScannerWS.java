@@ -22,6 +22,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import org.apache.logging.log4j.LogManager;
 
 /**
  *
@@ -30,6 +31,9 @@ import javax.ws.rs.core.UriInfo;
 @Path("/")
 @Consumes(MediaType.APPLICATION_JSON)
 public class ScannerWS {
+
+    protected static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(ScannerWS.class
+            .getName());
 
     @Context
     private UriInfo context;
@@ -44,6 +48,7 @@ public class ScannerWS {
     @Path("/start")
     @Consumes(MediaType.APPLICATION_JSON)
     public Response startScan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
         service.submit(new TlsScannerCallback(request));
         return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
     }
