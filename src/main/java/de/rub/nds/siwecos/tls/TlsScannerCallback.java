@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import de.rub.nds.siwecos.tls.json.ScanResult;
 import de.rub.nds.siwecos.tls.json.TestResult;
 import de.rub.nds.siwecos.tls.json.TranslateableMessage;
+import de.rub.nds.siwecos.tls.json.ValuePair;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
@@ -222,18 +223,22 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("ANON_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("ANON_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_ANON", report.getSupportsAnonCiphers() == null, null,
                 report.getSupportsAnonCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsAnonCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
     }
 
-    private String convertSuiteList(List<CipherSuite> suiteList) {
+    private ValuePair convertSuiteList(List<CipherSuite> suiteList) {
         StringBuilder builder = new StringBuilder();
         for (CipherSuite suite : suiteList) {
             builder.append(suite.name()).append(" ");
         }
-        return builder.toString().trim();
+        return new ValuePair("ciphersuites", builder.toString());
     }
 
     private TestResult getSupportsExport(SiteReport report) {
@@ -244,7 +249,11 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("EXPORT_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("EXPORT_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_EXPORT", report.getSupportsExportCiphers() == null, null,
                 report.getSupportsExportCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsExportCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
@@ -258,7 +267,11 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("NULL_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("NULL_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_NULL", report.getSupportsNullCiphers() == null, null,
                 report.getSupportsNullCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsNullCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
@@ -272,7 +285,11 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("RC4_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("RC4_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_RC4", report.getSupportsRc4Ciphers() == null, null,
                 report.getSupportsRc4Ciphers() == Boolean.TRUE ? 30 : 100,
                 !(report.getSupportsRc4Ciphers() == Boolean.TRUE) ? "success" : "warning", messageList);
@@ -370,10 +387,13 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("DES_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("DES_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_DES", report.getSupportsDesCiphers() == null, null,
                 report.getSupportsDesCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsDesCiphers() == Boolean.TRUE) ? "success" : "warning", messageList);
     }
-
 }
