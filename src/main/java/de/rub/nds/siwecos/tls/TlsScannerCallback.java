@@ -43,7 +43,7 @@ public class TlsScannerCallback implements Runnable {
     protected static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TlsScannerCallback.class
             .getName());
 
-    private ScanRequest request;
+    private final ScanRequest request;
 
     public TlsScannerCallback(ScanRequest request) {
         this.request = request;
@@ -239,7 +239,7 @@ public class TlsScannerCallback implements Runnable {
         for (CipherSuite suite : suiteList) {
             builder.append(suite.name()).append(" ");
         }
-        return new ValuePair("ciphersuites", builder.toString());
+        return new ValuePair("CIPHERSUITES", builder.toString());
     }
 
     private TestResult getSupportsExport(SiteReport report) {
