@@ -23,6 +23,7 @@ import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.constants.ProbeType;
+import de.rub.nds.tlsscanner.probe.certificate.CertificateReport;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -30,9 +31,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
+import org.bouncycastle.crypto.tls.Certificate;
 
 /**
  *
@@ -171,27 +175,70 @@ public class TlsScannerCallback implements Runnable {
     }
 
     private TestResult getHttpsResponse(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        messageList.add(new TranslateableMessage("HTTPS_RESPONSE", new ValuePair("HOST", report.getHost())));
         return new TestResult("HTTPS_NO_RESPONSE", report.getServerIsAlive() == null, null,
                 report.getServerIsAlive() == Boolean.TRUE ? 100 : 0,
-                report.getServerIsAlive() == Boolean.TRUE ? "success" : "critical", null);
+                report.getServerIsAlive() == Boolean.TRUE ? "success" : "critical", messageList);
     }
 
     private TestResult getHttpsSupported(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        messageList.add(new TranslateableMessage("HTTPS_SUPPORTED", new ValuePair("HOST", report.getHost())));
         return new TestResult("HTTPS_NOT_SUPPORTED", report.getSupportsSslTls() == null, null,
                 report.getSupportsSslTls() == Boolean.TRUE ? 100 : 0,
-                report.getSupportsSslTls() == Boolean.TRUE ? "hidden" : "critical", null);
+                report.getSupportsSslTls() == Boolean.TRUE ? "hidden" : "critical", messageList);
     }
 
     private TestResult getCertificateExpired(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        Date tempDate = null;
+        String certString = null;
+        for (CertificateReport certReport : report.getCertificateReports()) {
+            if (certReport.getValidTo().before(new Date(System.currentTimeMillis()))) {
+                tempDate = certReport.getValidTo();
+                certString = certReport.toString();
+                break;
+            }
+        }
+        if (tempDate != null) {
+            List<ValuePair> pairList = new LinkedList<>();
+            pairList.add(new ValuePair("DATE", DateFormat
+                    .getDateInstance().format(tempDate)));
+            pairList.add(new ValuePair("CERTIFICATE", certString));
+            messageList.add(new TranslateableMessage("EXPIRED", pairList));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", null);
+                : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        Date tempDate = null;
+        String certString = null;
+        for (CertificateReport certReport : report.getCertificateReports()) {
+            if (certReport.getValidFrom().after(new Date(System.currentTimeMillis()))) {
+                tempDate = certReport.getValidFrom();
+                certString = certReport.toString();
+                break;
+            }
+        }
+        if (tempDate != null) {
+            List<ValuePair> pairList = new LinkedList<>();
+            pairList.add(new ValuePair("DATE", DateFormat
+                    .getDateInstance().format(tempDate)));
+            pairList.add(new ValuePair("CERTIFICATE", certString));
+            messageList.add(new TranslateableMessage("NOT_YET_VALID", pairList));
+        } else {
+            messageList = null;
+        }
+
         return new TestResult("CERTIFICATE_NOT_VALID_YET", report.getCertificateNotYetValid() == null, null,
                 report.getCertificateNotYetValid() ? 0 : 100,
-                !report.getCertificateNotYetValid() == Boolean.TRUE ? "success" : "critical", null);
+                !report.getCertificateNotYetValid() == Boolean.TRUE ? "success" : "critical", messageList);
     }
 
     private TestResult getCertificateNotSentByServer(SiteReport report) {
@@ -205,12 +252,14 @@ public class TlsScannerCallback implements Runnable {
     }
 
     private TestResult getCertificateWeakHashFunction(SiteReport report) {
+        String certString = null;
         return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION", report.getCertificateHasWeakHashAlgorithm() == null,
                 null, report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
                 !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "critical", null);
     }
 
     private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
+        String certString = null;
         return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO", report.getCertificateHasWeakSignAlgorithm() == null, null,
                 report.getCertificateHasWeakSignAlgorithm() ? 0 : 100,
                 !report.getCertificateHasWeakSignAlgorithm() == Boolean.TRUE ? "hidden" : "critical", null);
@@ -381,13 +430,13 @@ public class TlsScannerCallback implements Runnable {
     }
 
     private TestResult getSupportsDes(SiteReport report) {
-        List<TranslateableMessage> messageList = new LinkedList<>();
         List<CipherSuite> suiteList = new LinkedList<>();
         for (CipherSuite suite : report.getCipherSuites()) {
             if (suite.name().toUpperCase().contains("_DES")) {
                 suiteList.add(suite);
             }
         }
+        List<TranslateableMessage> messageList = new LinkedList<>();
         if (suiteList.size() > 0) {
             messageList.add(new TranslateableMessage("DES_SUITES", convertSuiteList(suiteList)));
         } else {
