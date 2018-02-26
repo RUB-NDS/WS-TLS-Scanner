@@ -70,7 +70,7 @@ public class TlsScannerCallback implements Runnable {
     }
 
     public String scanResultToJson(ScanResult result) {
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        ObjectMapper ow = new ObjectMapper();
         String json = "";
         try {
             json = ow.writeValueAsString(result);
@@ -96,6 +96,7 @@ public class TlsScannerCallback implements Runnable {
                 http.connect();
                 try (OutputStream os = http.getOutputStream()) {
                     os.write(json.getBytes(Charset.forName("UTF-8")));
+                    os.flush();
                 }
                 http.disconnect();
             } catch (IOException ex) {
