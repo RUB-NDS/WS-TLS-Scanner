@@ -161,15 +161,44 @@ public class TlsScannerCallback implements Runnable {
             resultList.add(getCve20162107Vulnerable(report));
         }
 
-        int lowest = 100;
+        int max = 100;
         boolean hasError = false;
+        boolean hasCritical = false;
+        boolean hasWarning = false;
+        int count = 0;
+        int score = 0;
         for (TestResult result : resultList) {
-            if (result.getScore() < lowest) {
-                lowest = result.getScore();
+            if (result.getScore() < max && result.getScoreType().equals("critical")) {
+                max = result.getScore();
+                hasCritical = true;
+            }
+            if (result.getScoreType().equals("warning")) {
+                hasWarning = true;
+
+                if (max > result.getScore()) {
+                    if (result.getScore() > 80) {
+                        max = result.getScore();
+                    } else {
+                        max = 80;
+                    }
+                }
             }
             hasError |= result.isHasError();
+            if (!hasError) {
+                score += result.getScore();
+                count++;
+            }
         }
-        ScanResult result = new ScanResult("TLS", false, null, lowest, resultList);
+
+        if (count != 0) {
+            score = score / count;
+        } else {
+            score = 0;
+        }
+        if (score > max && (hasCritical || hasWarning)) {
+            score = (int) (score * (((double) max) / 100));
+        }
+        ScanResult result = new ScanResult("TLS", false, null, score, resultList);
         return result;
     }
 
@@ -178,7 +207,7 @@ public class TlsScannerCallback implements Runnable {
         messageList.add(new TranslateableMessage("HTTPS_RESPONSE", new ValuePair("HOST", report.getHost())));
         return new TestResult("HTTPS_NO_RESPONSE", report.getServerIsAlive() == null, null,
                 report.getServerIsAlive() == Boolean.TRUE ? 100 : 0,
-                report.getServerIsAlive() == Boolean.TRUE ? "success" : "critical", messageList);
+                report.getServerIsAlive() == Boolean.TRUE ? "success" : "warning", messageList);
     }
 
     private TestResult getHttpsSupported(SiteReport report) {
@@ -210,7 +239,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", null);
+                : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
@@ -234,8 +263,8 @@ public class TlsScannerCallback implements Runnable {
         }
 
         return new TestResult("CERTIFICATE_NOT_VALID_YET", report.getCertificateNotYetValid() == null, null,
-                report.getCertificateNotYetValid() ? 0 : 100,
-                !report.getCertificateNotYetValid() == Boolean.TRUE ? "success" : "critical", messageList);
+                report.getCertificateNotYetValid() ? 10 : 100,
+                !report.getCertificateNotYetValid() == Boolean.TRUE ? "success" : "warning", messageList);
     }
 
     private TestResult getCertificateNotSentByServer(SiteReport report) {
@@ -266,9 +295,22 @@ public class TlsScannerCallback implements Runnable {
             valuePairList.add(new ValuePair("CERTIFICATE", certString));
             messageList.add(new TranslateableMessage("HASH_ALGO", valuePairList));
         }
-        return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION", report.getCertificateHasWeakHashAlgorithm() == null,
-                null, report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
-                !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "critical", null);
+        boolean critical = false;
+        if (hashAlgo != null && hashAlgo.equals(HashAlgorithm.MD5.name())) {
+            critical = true;
+        }
+        if (critical) {
+            return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION",
+                    report.getCertificateHasWeakHashAlgorithm() == null, null,
+                    report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
+                    !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "critical", messageList);
+
+        } else {
+            return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION",
+                    report.getCertificateHasWeakHashAlgorithm() == null, null,
+                    report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
+                    !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "warning", messageList);
+        }
     }
 
     /*
