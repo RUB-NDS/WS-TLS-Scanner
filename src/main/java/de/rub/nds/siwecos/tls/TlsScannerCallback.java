@@ -117,7 +117,7 @@ public class TlsScannerCallback implements Runnable {
             resultList.add(getCertificateNotValidYet(report));
             resultList.add(getCertificateNotSentByServer(report));
             resultList.add(getCertificateWeakHashFunction(report));
-            //resultList.add(getCertificateWeakSignAlgorithm(report));
+            // resultList.add(getCertificateWeakSignAlgorithm(report));
         }
         if (report.getProbeTypeList().contains(ProbeType.CIPHERSUITE)) {
             resultList.add(getSupportsAnon(report));
@@ -202,8 +202,7 @@ public class TlsScannerCallback implements Runnable {
         }
         if (tempDate != null) {
             List<ValuePair> pairList = new LinkedList<>();
-            pairList.add(new ValuePair("DATE", DateFormat
-                    .getDateInstance().format(tempDate)));
+            pairList.add(new ValuePair("DATE", DateFormat.getDateInstance().format(tempDate)));
             pairList.add(new ValuePair("CERTIFICATE", certString));
             messageList.add(new TranslateableMessage("EXPIRED", pairList));
         } else {
@@ -211,7 +210,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                : "critical", null);
+                        : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
@@ -227,8 +226,7 @@ public class TlsScannerCallback implements Runnable {
         }
         if (tempDate != null) {
             List<ValuePair> pairList = new LinkedList<>();
-            pairList.add(new ValuePair("DATE", DateFormat
-                    .getDateInstance().format(tempDate)));
+            pairList.add(new ValuePair("DATE", DateFormat.getDateInstance().format(tempDate)));
             pairList.add(new ValuePair("CERTIFICATE", certString));
             messageList.add(new TranslateableMessage("NOT_YET_VALID", pairList));
         } else {
@@ -256,7 +254,8 @@ public class TlsScannerCallback implements Runnable {
         List<TranslateableMessage> messageList = new LinkedList<>();
         if (report.getCertificateHasWeakHashAlgorithm() != null) {
             for (CertificateReport certReport : report.getCertificateReports()) {
-                if (certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.MD5 || certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.SHA1) {
+                if (certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.MD5
+                        || certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.SHA1) {
                     hashAlgo = certReport.getSignatureAndHashAlgorithm().getHashAlgorithm().name();
                     certString = certReport.toString();
                     break;
@@ -273,17 +272,15 @@ public class TlsScannerCallback implements Runnable {
     }
 
     /*
-    private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
-        boolean vulnerable = report.getCertificateHasWeakSignAlgorithm() == Boolean.TRUE;
-        String certString = null;
-        List<TranslateableMessage> messageList = new LinkedList<>();
-        if (vulnerable) {
-            messageList.add(new TranslateableMessage("SIGN", new ValuePair("SIGN", certString)));    
-        }
-        return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO", report.getCertificateHasWeakSignAlgorithm() == null, null,
-                report.getCertificateHasWeakSignAlgorithm() ? 0 : 100,
-                vulnerable ? "critical" : "hidden", null);
-    }
+     * private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
+     * boolean vulnerable = report.getCertificateHasWeakSignAlgorithm() ==
+     * Boolean.TRUE; String certString = null; List<TranslateableMessage>
+     * messageList = new LinkedList<>(); if (vulnerable) { messageList.add(new
+     * TranslateableMessage("SIGN", new ValuePair("SIGN", certString))); }
+     * return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO",
+     * report.getCertificateHasWeakSignAlgorithm() == null, null,
+     * report.getCertificateHasWeakSignAlgorithm() ? 0 : 100, vulnerable ?
+     * "critical" : "hidden", null); }
      */
     private TestResult getSupportsAnon(SiteReport report) {
         List<TranslateableMessage> messageList = new LinkedList<>();

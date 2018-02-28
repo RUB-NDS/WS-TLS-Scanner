@@ -13,7 +13,6 @@ package de.rub.nds.siwecos.tls.ws;
  *
  * @author Robert Merget <robert.merget@rub.de>
  */
-
 public class ScanRequest {
 
     private String url;

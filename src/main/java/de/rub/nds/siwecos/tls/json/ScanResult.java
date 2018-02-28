@@ -16,6 +16,7 @@ import java.util.List;
  * @author Robert Merget - robert.merget@rub.de
  */
 public class ScanResult {
+
     private String name;
 
     private boolean hasError;
