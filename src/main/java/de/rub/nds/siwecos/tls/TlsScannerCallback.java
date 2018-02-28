@@ -11,7 +11,6 @@ package de.rub.nds.siwecos.tls;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import de.rub.nds.siwecos.tls.json.ScanResult;
 import de.rub.nds.siwecos.tls.json.TestResult;
 import de.rub.nds.siwecos.tls.json.TranslateableMessage;
@@ -20,6 +19,7 @@ import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
+import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.constants.ProbeType;
@@ -36,7 +36,6 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
-import org.bouncycastle.crypto.tls.Certificate;
 
 /**
  *
@@ -118,7 +117,7 @@ public class TlsScannerCallback implements Runnable {
             resultList.add(getCertificateNotValidYet(report));
             resultList.add(getCertificateNotSentByServer(report));
             resultList.add(getCertificateWeakHashFunction(report));
-            resultList.add(getCertificateWeakSignAlgorithm(report));
+            //resultList.add(getCertificateWeakSignAlgorithm(report));
         }
         if (report.getProbeTypeList().contains(ProbeType.CIPHERSUITE)) {
             resultList.add(getSupportsAnon(report));
@@ -253,18 +252,39 @@ public class TlsScannerCallback implements Runnable {
 
     private TestResult getCertificateWeakHashFunction(SiteReport report) {
         String certString = null;
+        String hashAlgo = null;
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        if (report.getCertificateHasWeakHashAlgorithm() != null) {
+            for (CertificateReport certReport : report.getCertificateReports()) {
+                if (certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.MD5 || certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.SHA1) {
+                    hashAlgo = certReport.getSignatureAndHashAlgorithm().getHashAlgorithm().name();
+                    certString = certReport.toString();
+                    break;
+                }
+            }
+            List<ValuePair> valuePairList = new LinkedList<>();
+            valuePairList.add(new ValuePair("HASH", hashAlgo));
+            valuePairList.add(new ValuePair("CERTIFICATE", certString));
+            messageList.add(new TranslateableMessage("HASH_ALGO", valuePairList));
+        }
         return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION", report.getCertificateHasWeakHashAlgorithm() == null,
                 null, report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
                 !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "critical", null);
     }
 
+    /*
     private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
+        boolean vulnerable = report.getCertificateHasWeakSignAlgorithm() == Boolean.TRUE;
         String certString = null;
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        if (vulnerable) {
+            messageList.add(new TranslateableMessage("SIGN", new ValuePair("SIGN", certString)));    
+        }
         return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO", report.getCertificateHasWeakSignAlgorithm() == null, null,
                 report.getCertificateHasWeakSignAlgorithm() ? 0 : 100,
-                !report.getCertificateHasWeakSignAlgorithm() == Boolean.TRUE ? "hidden" : "critical", null);
+                vulnerable ? "critical" : "hidden", null);
     }
-
+     */
     private TestResult getSupportsAnon(SiteReport report) {
         List<TranslateableMessage> messageList = new LinkedList<>();
         List<CipherSuite> suiteList = new LinkedList<>();
