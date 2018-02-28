@@ -485,7 +485,7 @@ public class TlsScannerCallback implements Runnable {
 
     private TestResult getSupportsTls13(SiteReport report) {
         return new TestResult("PROTOCOLVERSION_TLS13", report.supportsAnyTls13() == null, null,
-                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0, "bonus", null);
+                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0, report.supportsAnyTls13() == Boolean.TRUE ? "bonus" : "hidden", null);
     }
 
     private TestResult getSupportsDes(SiteReport report) {
