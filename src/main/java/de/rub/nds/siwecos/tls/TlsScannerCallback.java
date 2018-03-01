@@ -239,7 +239,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                : "critical", null);
+                        : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
@@ -485,7 +485,8 @@ public class TlsScannerCallback implements Runnable {
 
     private TestResult getSupportsTls13(SiteReport report) {
         return new TestResult("PROTOCOLVERSION_TLS13", report.supportsAnyTls13() == null, null,
-                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0, report.supportsAnyTls13() == Boolean.TRUE ? "bonus" : "hidden", null);
+                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0,
+                report.supportsAnyTls13() == Boolean.TRUE ? "bonus" : "hidden", null);
     }
 
     private TestResult getSupportsDes(SiteReport report) {
