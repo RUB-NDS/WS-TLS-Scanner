@@ -308,7 +308,7 @@ public class TlsScannerCallback implements Runnable {
         } else {
             return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION",
                     report.getCertificateHasWeakHashAlgorithm() == null, null,
-                    report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
+                    report.getCertificateHasWeakHashAlgorithm() ? 50 : 100,
                     !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "warning", messageList);
         }
     }
