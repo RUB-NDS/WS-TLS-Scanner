@@ -7,12 +7,10 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package de.rub.nds.siwecos.tls.json;
+
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -22,11 +20,17 @@ public class TranslateableMessage {
 
     private String placeholder;
 
-    private String values;
+    private List<ValuePair> values;
 
-    public TranslateableMessage(String placeholder, String values) {
+    public TranslateableMessage(String placeholder, List<ValuePair> values) {
         this.placeholder = placeholder;
         this.values = values;
+    }
+
+    public TranslateableMessage(String placeholder, ValuePair value) {
+        this.placeholder = placeholder;
+        this.values = new LinkedList<>();
+        values.add(value);
     }
 
     public String getPlaceholder() {
@@ -37,11 +41,11 @@ public class TranslateableMessage {
         this.placeholder = placeholder;
     }
 
-    public String getValues() {
+    public List<ValuePair> getValues() {
         return values;
     }
 
-    public void setValues(String values) {
+    public void setValues(List<ValuePair> values) {
         this.values = values;
     }
 }

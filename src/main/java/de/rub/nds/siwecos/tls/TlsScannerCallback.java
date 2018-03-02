@@ -11,17 +11,19 @@ package de.rub.nds.siwecos.tls;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import de.rub.nds.siwecos.tls.json.ScanResult;
 import de.rub.nds.siwecos.tls.json.TestResult;
 import de.rub.nds.siwecos.tls.json.TranslateableMessage;
+import de.rub.nds.siwecos.tls.json.ValuePair;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
+import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.constants.ProbeType;
+import de.rub.nds.tlsscanner.probe.certificate.CertificateReport;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -29,6 +31,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +46,7 @@ public class TlsScannerCallback implements Runnable {
     protected static final org.apache.logging.log4j.Logger LOGGER = LogManager.getLogger(TlsScannerCallback.class
             .getName());
 
-    private ScanRequest request;
+    private final ScanRequest request;
 
     public TlsScannerCallback(ScanRequest request) {
         this.request = request;
@@ -69,7 +73,7 @@ public class TlsScannerCallback implements Runnable {
     }
 
     public String scanResultToJson(ScanResult result) {
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        ObjectMapper ow = new ObjectMapper();
         String json = "";
         try {
             json = ow.writeValueAsString(result);
@@ -95,6 +99,7 @@ public class TlsScannerCallback implements Runnable {
                 http.connect();
                 try (OutputStream os = http.getOutputStream()) {
                     os.write(json.getBytes(Charset.forName("UTF-8")));
+                    os.flush();
                 }
                 http.disconnect();
             } catch (IOException ex) {
@@ -112,7 +117,7 @@ public class TlsScannerCallback implements Runnable {
             resultList.add(getCertificateNotValidYet(report));
             resultList.add(getCertificateNotSentByServer(report));
             resultList.add(getCertificateWeakHashFunction(report));
-            resultList.add(getCertificateWeakSignAlgorithm(report));
+            // resultList.add(getCertificateWeakSignAlgorithm(report));
         }
         if (report.getProbeTypeList().contains(ProbeType.CIPHERSUITE)) {
             resultList.add(getSupportsAnon(report));
@@ -156,40 +161,110 @@ public class TlsScannerCallback implements Runnable {
             resultList.add(getCve20162107Vulnerable(report));
         }
 
-        int lowest = 100;
+        int max = 100;
         boolean hasError = false;
+        boolean hasCritical = false;
+        boolean hasWarning = false;
+        int count = 0;
+        int score = 0;
         for (TestResult result : resultList) {
-            if (result.getScore() < lowest) {
-                lowest = result.getScore();
+            if (result.getScore() < max && result.getScoreType().equals("critical")) {
+                max = result.getScore();
+                hasCritical = true;
+            }
+            if (result.getScoreType().equals("warning")) {
+                hasWarning = true;
+
+                if (max > result.getScore()) {
+                    if (result.getScore() > 80) {
+                        max = result.getScore();
+                    } else {
+                        max = 80;
+                    }
+                }
             }
             hasError |= result.isHasError();
+            if (!hasError) {
+                score += result.getScore();
+                count++;
+            }
         }
-        ScanResult result = new ScanResult("TLS", false, null, lowest, resultList);
+
+        if (count != 0) {
+            score = score / count;
+        } else {
+            score = 0;
+        }
+        if (score > max && (hasCritical || hasWarning)) {
+            score = (int) (score * (((double) max) / 100));
+        }
+        ScanResult result = new ScanResult("TLS", false, null, score, resultList);
         return result;
     }
 
     private TestResult getHttpsResponse(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        messageList.add(new TranslateableMessage("HTTPS_RESPONSE", new ValuePair("HOST", report.getHost())));
         return new TestResult("HTTPS_NO_RESPONSE", report.getServerIsAlive() == null, null,
                 report.getServerIsAlive() == Boolean.TRUE ? 100 : 0,
-                report.getServerIsAlive() == Boolean.TRUE ? "success" : "critical", null);
+                report.getServerIsAlive() == Boolean.TRUE ? "success" : "warning", messageList);
     }
 
     private TestResult getHttpsSupported(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        messageList.add(new TranslateableMessage("HTTPS_SUPPORTED", new ValuePair("HOST", report.getHost())));
         return new TestResult("HTTPS_NOT_SUPPORTED", report.getSupportsSslTls() == null, null,
                 report.getSupportsSslTls() == Boolean.TRUE ? 100 : 0,
-                report.getSupportsSslTls() == Boolean.TRUE ? "hidden" : "critical", null);
+                report.getSupportsSslTls() == Boolean.TRUE ? "hidden" : "critical", messageList);
     }
 
     private TestResult getCertificateExpired(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        Date tempDate = null;
+        String certString = null;
+        for (CertificateReport certReport : report.getCertificateReports()) {
+            if (certReport.getValidTo().before(new Date(System.currentTimeMillis()))) {
+                tempDate = certReport.getValidTo();
+                certString = certReport.toString();
+                break;
+            }
+        }
+        if (tempDate != null) {
+            List<ValuePair> pairList = new LinkedList<>();
+            pairList.add(new ValuePair("DATE", DateFormat.getDateInstance().format(tempDate)));
+            pairList.add(new ValuePair("CERTIFICATE", certString));
+            messageList.add(new TranslateableMessage("EXPIRED", pairList));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
                         : "critical", null);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        Date tempDate = null;
+        String certString = null;
+        for (CertificateReport certReport : report.getCertificateReports()) {
+            if (certReport.getValidFrom().after(new Date(System.currentTimeMillis()))) {
+                tempDate = certReport.getValidFrom();
+                certString = certReport.toString();
+                break;
+            }
+        }
+        if (tempDate != null) {
+            List<ValuePair> pairList = new LinkedList<>();
+            pairList.add(new ValuePair("DATE", DateFormat.getDateInstance().format(tempDate)));
+            pairList.add(new ValuePair("CERTIFICATE", certString));
+            messageList.add(new TranslateableMessage("NOT_YET_VALID", pairList));
+        } else {
+            messageList = null;
+        }
+
         return new TestResult("CERTIFICATE_NOT_VALID_YET", report.getCertificateNotYetValid() == null, null,
-                report.getCertificateNotYetValid() ? 0 : 100,
-                !report.getCertificateNotYetValid() == Boolean.TRUE ? "success" : "critical", null);
+                report.getCertificateNotYetValid() ? 10 : 100,
+                !report.getCertificateNotYetValid() == Boolean.TRUE ? "success" : "warning", messageList);
     }
 
     private TestResult getCertificateNotSentByServer(SiteReport report) {
@@ -203,17 +278,52 @@ public class TlsScannerCallback implements Runnable {
     }
 
     private TestResult getCertificateWeakHashFunction(SiteReport report) {
-        return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION", report.getCertificateHasWeakHashAlgorithm() == null,
-                null, report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
-                !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "critical", null);
+        String certString = null;
+        String hashAlgo = null;
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        if (report.getCertificateHasWeakHashAlgorithm() != null) {
+            for (CertificateReport certReport : report.getCertificateReports()) {
+                if (certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.MD5
+                        || certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.SHA1) {
+                    hashAlgo = certReport.getSignatureAndHashAlgorithm().getHashAlgorithm().name();
+                    certString = certReport.toString();
+                    break;
+                }
+            }
+            List<ValuePair> valuePairList = new LinkedList<>();
+            valuePairList.add(new ValuePair("HASH", hashAlgo));
+            valuePairList.add(new ValuePair("CERTIFICATE", certString));
+            messageList.add(new TranslateableMessage("HASH_ALGO", valuePairList));
+        }
+        boolean critical = false;
+        if (hashAlgo != null && hashAlgo.equals(HashAlgorithm.MD5.name())) {
+            critical = true;
+        }
+        if (critical) {
+            return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION",
+                    report.getCertificateHasWeakHashAlgorithm() == null, null,
+                    report.getCertificateHasWeakHashAlgorithm() ? 0 : 100,
+                    !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "critical", messageList);
+
+        } else {
+            return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION",
+                    report.getCertificateHasWeakHashAlgorithm() == null, null,
+                    report.getCertificateHasWeakHashAlgorithm() ? 50 : 100,
+                    !report.getCertificateHasWeakHashAlgorithm() == Boolean.TRUE ? "success" : "warning", messageList);
+        }
     }
 
-    private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
-        return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO", report.getCertificateHasWeakSignAlgorithm() == null, null,
-                report.getCertificateHasWeakSignAlgorithm() ? 0 : 100,
-                !report.getCertificateHasWeakSignAlgorithm() == Boolean.TRUE ? "hidden" : "critical", null);
-    }
-
+    /*
+     * private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
+     * boolean vulnerable = report.getCertificateHasWeakSignAlgorithm() ==
+     * Boolean.TRUE; String certString = null; List<TranslateableMessage>
+     * messageList = new LinkedList<>(); if (vulnerable) { messageList.add(new
+     * TranslateableMessage("SIGN", new ValuePair("SIGN", certString))); }
+     * return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO",
+     * report.getCertificateHasWeakSignAlgorithm() == null, null,
+     * report.getCertificateHasWeakSignAlgorithm() ? 0 : 100, vulnerable ?
+     * "critical" : "hidden", null); }
+     */
     private TestResult getSupportsAnon(SiteReport report) {
         List<TranslateableMessage> messageList = new LinkedList<>();
         List<CipherSuite> suiteList = new LinkedList<>();
@@ -222,18 +332,22 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("ANON_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("ANON_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_ANON", report.getSupportsAnonCiphers() == null, null,
                 report.getSupportsAnonCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsAnonCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
     }
 
-    private String convertSuiteList(List<CipherSuite> suiteList) {
+    private ValuePair convertSuiteList(List<CipherSuite> suiteList) {
         StringBuilder builder = new StringBuilder();
         for (CipherSuite suite : suiteList) {
             builder.append(suite.name()).append(" ");
         }
-        return builder.toString().trim();
+        return new ValuePair("CIPHERSUITES", builder.toString());
     }
 
     private TestResult getSupportsExport(SiteReport report) {
@@ -244,7 +358,11 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("EXPORT_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("EXPORT_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_EXPORT", report.getSupportsExportCiphers() == null, null,
                 report.getSupportsExportCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsExportCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
@@ -258,7 +376,11 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("NULL_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("NULL_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_NULL", report.getSupportsNullCiphers() == null, null,
                 report.getSupportsNullCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsNullCiphers() == Boolean.TRUE) ? "success" : "critical", messageList);
@@ -272,7 +394,11 @@ public class TlsScannerCallback implements Runnable {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("RC4_SUITES", convertSuiteList(suiteList)));
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("RC4_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_RC4", report.getSupportsRc4Ciphers() == null, null,
                 report.getSupportsRc4Ciphers() == Boolean.TRUE ? 30 : 100,
                 !(report.getSupportsRc4Ciphers() == Boolean.TRUE) ? "success" : "warning", messageList);
@@ -359,21 +485,25 @@ public class TlsScannerCallback implements Runnable {
 
     private TestResult getSupportsTls13(SiteReport report) {
         return new TestResult("PROTOCOLVERSION_TLS13", report.supportsAnyTls13() == null, null,
-                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0, "bonus", null);
+                report.supportsAnyTls13() == Boolean.TRUE ? 100 : 0,
+                report.supportsAnyTls13() == Boolean.TRUE ? "bonus" : "hidden", null);
     }
 
     private TestResult getSupportsDes(SiteReport report) {
-        List<TranslateableMessage> messageList = new LinkedList<>();
         List<CipherSuite> suiteList = new LinkedList<>();
         for (CipherSuite suite : report.getCipherSuites()) {
             if (suite.name().toUpperCase().contains("_DES")) {
                 suiteList.add(suite);
             }
         }
-        messageList.add(new TranslateableMessage("DES_SUITES", convertSuiteList(suiteList)));
+        List<TranslateableMessage> messageList = new LinkedList<>();
+        if (suiteList.size() > 0) {
+            messageList.add(new TranslateableMessage("DES_SUITES", convertSuiteList(suiteList)));
+        } else {
+            messageList = null;
+        }
         return new TestResult("CIPHERSUITE_DES", report.getSupportsDesCiphers() == null, null,
                 report.getSupportsDesCiphers() == Boolean.TRUE ? 0 : 100,
                 !(report.getSupportsDesCiphers() == Boolean.TRUE) ? "success" : "warning", messageList);
     }
-
 }
