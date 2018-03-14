@@ -59,6 +59,7 @@ public class TlsScannerCallback implements Runnable {
 
             ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
             scannerConfig.setDangerLevel(request.getDangerLevel());
+            scannerConfig.setImplementation(false);
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
             TlsScanner scanner = new TlsScanner(scannerConfig);
@@ -173,17 +174,7 @@ public class TlsScannerCallback implements Runnable {
                 max = result.getScore();
                 hasCritical = true;
             }
-            if (result.getScoreType().equals("warning")) {
-                hasWarning = true;
 
-                if (max > result.getScore()) {
-                    if (result.getScore() > 80) {
-                        max = result.getScore();
-                    } else {
-                        max = 80;
-                    }
-                }
-            }
             hasError |= result.isHasError();
             if (!hasError) {
                 score += result.getScore();
@@ -415,7 +406,7 @@ public class TlsScannerCallback implements Runnable {
 
     private TestResult getCipherSuiteOrder(SiteReport report) {
         return new TestResult("CIPHERSUITEORDER_ENFORCED", report.getEnforcesCipherSuiteOrdering() == null, null,
-                report.getEnforcesCipherSuiteOrdering() == Boolean.TRUE ? 90 : 100,
+                report.getEnforcesCipherSuiteOrdering() == Boolean.TRUE ? 100 : 90,
                 (report.getEnforcesCipherSuiteOrdering() == Boolean.TRUE) ? "success" : "warning", null);
     }
 
@@ -489,7 +480,7 @@ public class TlsScannerCallback implements Runnable {
     private TestResult getHeartbleedVulnerable(SiteReport report) {
         return new TestResult("HEARTBLEED_VULNERABLE", report.getHeartbleedVulnerable() == null, null,
                 report.getHeartbleedVulnerable() == Boolean.TRUE ? 0 : 100,
-                !(report.getHeartbleedVulnerable() == Boolean.TRUE) ? "success" : "critical", null);
+                !(report.getHeartbleedVulnerable() == Boolean.TRUE) ? "success" : "fatal", null);
     }
 
     private TestResult getSupportsTls13(SiteReport report) {
