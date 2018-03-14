@@ -168,7 +168,8 @@ public class TlsScannerCallback implements Runnable {
         int count = 0;
         int score = 0;
         for (TestResult result : resultList) {
-            if (result.getScore() < max && (result.getScoreType().equals("fatal") || result.getScoreType().equals("critical"))) {
+            if (result.getScore() < max
+                    && (result.getScoreType().equals("fatal") || result.getScoreType().equals("critical"))) {
                 max = result.getScore();
                 hasCritical = true;
             }
@@ -198,7 +199,7 @@ public class TlsScannerCallback implements Runnable {
         if (score > max && (hasCritical || hasWarning)) {
             score = (int) (score * (((double) max) / 100));
         }
-        //Rewrite critical fatal
+        // Rewrite critical fatal
         for (TestResult result : resultList) {
             if (result.getScoreType().equals("critical")) {
                 result.setScoreType("warning");
@@ -247,7 +248,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                : "critical", messageList);
+                        : "critical", messageList);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
