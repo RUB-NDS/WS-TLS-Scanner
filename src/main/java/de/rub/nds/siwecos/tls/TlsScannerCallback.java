@@ -169,6 +169,9 @@ public class TlsScannerCallback implements Runnable {
         int count = 0;
         int score = 0;
         for (TestResult result : resultList) {
+            if (result.getScoreType().equals("hidden")) {
+                continue;
+            }
             if (result.getScore() < max
                     && (result.getScoreType().equals("fatal") || result.getScoreType().equals("critical"))) {
                 max = result.getScore();
