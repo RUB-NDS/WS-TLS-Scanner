@@ -59,7 +59,6 @@ public class TlsScannerCallback implements Runnable {
 
             ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
             scannerConfig.setDangerLevel(request.getDangerLevel());
-            scannerConfig.setImplementation(false);
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
             TlsScanner scanner = new TlsScanner(scannerConfig);
@@ -93,13 +92,14 @@ public class TlsScannerCallback implements Runnable {
                 URL url = new URL(callback);
                 URLConnection con = url.openConnection();
                 HttpURLConnection http = (HttpURLConnection) con;
-                con.setDoOutput(true);
                 http.setRequestMethod("POST");
-                http.setChunkedStreamingMode(4096);
+                http.setDoInput(true);
+                http.setDoOutput(true);
+                http.setFixedLengthStreamingMode(json.getBytes().length);
                 http.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
                 http.connect();
                 try (OutputStream os = http.getOutputStream()) {
-                    os.write(json.getBytes(Charset.forName("UTF-8")));
+                    os.write(json.getBytes("UTF-8"));
                     os.flush();
                 }
                 http.disconnect();

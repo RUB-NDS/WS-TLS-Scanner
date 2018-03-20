@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="WS-TLS-Scanner:war">
+    <output-path>$PROJECT_DIR$/target</output-path>
+    <root id="archive" name="WS-TLS-Scanner-2.2.war">
+      <element id="artifact" artifact-name="WS-TLS-Scanner:war exploded" />
+    </root>
+  </artifact>
+</component>
