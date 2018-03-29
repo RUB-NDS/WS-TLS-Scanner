@@ -158,9 +158,9 @@ public class TlsScannerCallback implements Runnable {
         if (report.getProbeTypeList().contains(ProbeType.TLS_POODLE)) {
             resultList.add(getTlsPoodleVulnerable(report));
         }
-        if (report.getProbeTypeList().contains(ProbeType.CVE20162107)) {
-            resultList.add(getCve20162107Vulnerable(report));
-        }
+        //if (report.getProbeTypeList().contains(ProbeType.CVE20162107)) {
+        //    resultList.add(getCve20162107Vulnerable(report));
+        //}
 
         int max = 100;
         boolean hasError = false;
