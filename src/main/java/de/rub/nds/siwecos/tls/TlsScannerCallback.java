@@ -158,9 +158,9 @@ public class TlsScannerCallback implements Runnable {
         if (report.getProbeTypeList().contains(ProbeType.TLS_POODLE)) {
             resultList.add(getTlsPoodleVulnerable(report));
         }
-        //if (report.getProbeTypeList().contains(ProbeType.CVE20162107)) {
-        //    resultList.add(getCve20162107Vulnerable(report));
-        //}
+        // if (report.getProbeTypeList().contains(ProbeType.CVE20162107)) {
+        // resultList.add(getCve20162107Vulnerable(report));
+        // }
 
         int max = 100;
         boolean hasError = false;
@@ -290,17 +290,22 @@ public class TlsScannerCallback implements Runnable {
                         || certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.SHA1) {
                     hashAlgo = certReport.getSignatureAndHashAlgorithm().getHashAlgorithm().name();
                     certString = certReport.toString();
+                    List<ValuePair> valuePairList = new LinkedList<>();
+                    valuePairList.add(new ValuePair("HASH", hashAlgo));
+                    valuePairList.add(new ValuePair("CERTIFICATE", certString));
+                    messageList.add(new TranslateableMessage("HASH_ALGO", valuePairList));
+
                     break;
                 }
             }
-            List<ValuePair> valuePairList = new LinkedList<>();
-            valuePairList.add(new ValuePair("HASH", hashAlgo));
-            valuePairList.add(new ValuePair("CERTIFICATE", certString));
-            messageList.add(new TranslateableMessage("HASH_ALGO", valuePairList));
+
         }
         boolean critical = false;
         if (hashAlgo != null && hashAlgo.equals(HashAlgorithm.MD5.name())) {
             critical = true;
+        }
+        if (messageList.isEmpty()) {
+            messageList = null;
         }
         if (critical) {
             return new TestResult("CERTIFICATE_WEAK_HASH_FUNCTION",
