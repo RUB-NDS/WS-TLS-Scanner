@@ -30,7 +30,6 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.Charset;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.LinkedList;
@@ -110,9 +109,13 @@ public class TlsScannerCallback implements Runnable {
     }
 
     public ScanResult reportToScanResult(SiteReport report) {
+        if (!report.getServerIsAlive()) {
+            return new ScanResult("TLS", true, getHttpsResponse(report), 0, new LinkedList<TestResult>());
+        }
+        if (!report.getSupportsSslTls()) {
+            return new ScanResult("TLS", true, getHttpsSupported(report), 0, new LinkedList<TestResult>());
+        }
         List<TestResult> resultList = new LinkedList<>();
-        resultList.add(getHttpsResponse(report));
-        resultList.add(getHttpsSupported(report));
         if (report.getProbeTypeList().contains(ProbeType.CERTIFICATE)) {
             resultList.add(getCertificateExpired(report));
             resultList.add(getCertificateNotValidYet(report));
@@ -205,20 +208,13 @@ public class TlsScannerCallback implements Runnable {
         return result;
     }
 
-    private TestResult getHttpsResponse(SiteReport report) {
-        List<TranslateableMessage> messageList = new LinkedList<>();
-        messageList.add(new TranslateableMessage("HTTPS_RESPONSE", new ValuePair("HOST", report.getHost())));
-        return new TestResult("HTTPS_NO_RESPONSE", report.getServerIsAlive() == null, null,
-                report.getServerIsAlive() == Boolean.TRUE ? 100 : 0,
-                report.getServerIsAlive() == Boolean.TRUE ? "hidden" : "warning", messageList);
+    private TranslateableMessage getHttpsResponse(SiteReport report) {
+        return new TranslateableMessage("HTTPS_RESPONSE", new ValuePair("HOST", report.getHost()));
+
     }
 
-    private TestResult getHttpsSupported(SiteReport report) {
-        List<TranslateableMessage> messageList = new LinkedList<>();
-        messageList.add(new TranslateableMessage("HTTPS_SUPPORTED", new ValuePair("HOST", report.getHost())));
-        return new TestResult("HTTPS_NOT_SUPPORTED", report.getSupportsSslTls() == null, null,
-                report.getSupportsSslTls() == Boolean.TRUE ? 100 : 0,
-                report.getSupportsSslTls() == Boolean.TRUE ? "hidden" : "fatal", messageList);
+    private TranslateableMessage getHttpsSupported(SiteReport report) {
+        return new TranslateableMessage("HTTPS_SUPPORTED", new ValuePair("HOST", report.getHost()));
     }
 
     private TestResult getCertificateExpired(SiteReport report) {
