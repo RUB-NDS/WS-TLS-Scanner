@@ -109,10 +109,10 @@ public class TlsScannerCallback implements Runnable {
     }
 
     public ScanResult reportToScanResult(SiteReport report) {
-        if (!report.getServerIsAlive()) {
+        if (report.getServerIsAlive() != Boolean.TRUE) {
             return new ScanResult("TLS", true, getHttpsResponse(report), 0, new LinkedList<TestResult>());
         }
-        if (!report.getSupportsSslTls()) {
+        if (report.getSupportsSslTls() != Boolean.TRUE) {
             return new ScanResult("TLS", true, getHttpsSupported(report), 0, new LinkedList<TestResult>());
         }
         List<TestResult> resultList = new LinkedList<>();
