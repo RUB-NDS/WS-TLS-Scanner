@@ -15,6 +15,8 @@ import de.rub.nds.siwecos.tls.json.ScanResult;
 import de.rub.nds.siwecos.tls.json.TestResult;
 import de.rub.nds.siwecos.tls.json.TranslateableMessage;
 import de.rub.nds.siwecos.tls.json.ValuePair;
+import de.rub.nds.siwecos.tls.ws.DebugOutput;
+import de.rub.nds.siwecos.tls.ws.PoolManager;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
@@ -47,12 +49,18 @@ public class TlsScannerCallback implements Runnable {
 
     private final ScanRequest request;
 
-    public TlsScannerCallback(ScanRequest request) {
+    private DebugOutput debugOutput;
+
+    public TlsScannerCallback(ScanRequest request, DebugOutput debugOutput) {
         this.request = request;
+        this.debugOutput = debugOutput;
     }
 
     @Override
     public void run() {
+        debugOutput.setLeftQueueAt(System.currentTimeMillis());
+        debugOutput.setScanStartedAt(System.currentTimeMillis());
+        debugOutput.setTimeInQueue(debugOutput.getLeftQueueAt() - debugOutput.getEnteredQueueAt());
         LOGGER.info("Scanning: " + request.getUrl());
         try {
 
@@ -64,6 +72,11 @@ public class TlsScannerCallback implements Runnable {
             SiteReport report = scanner.scan();
             ScanResult result = reportToScanResult(report);
             LOGGER.info("Finished scanning: " + request.getUrl());
+            debugOutput.setScanFinisedAt(System.currentTimeMillis());
+            debugOutput.setFinalQueueSize(PoolManager.getInstance().getService().getQueue().size());
+            if (DebugManager.getInstance().isDebugEnabled()) {
+                result.setDebugOutput(debugOutput);
+            }
             answer(result);
         } catch (Throwable T) {
             LOGGER.warn("Failed to scan:" + request.getUrl());

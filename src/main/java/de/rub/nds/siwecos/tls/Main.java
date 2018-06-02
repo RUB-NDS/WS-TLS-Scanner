@@ -16,6 +16,5 @@ package de.rub.nds.siwecos.tls;
 public class Main {
 
     public static void main(String args[]) {
-
     }
 }

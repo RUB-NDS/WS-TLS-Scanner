@@ -10,6 +10,7 @@
 package de.rub.nds.siwecos.tls;
 
 import de.rub.nds.siwecos.tls.json.ScanResult;
+import de.rub.nds.siwecos.tls.ws.DebugOutput;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsscanner.constants.ProbeType;
@@ -37,7 +38,8 @@ public class TlsScannerCallbackTest {
 
     @Before
     public void setUp() {
-        callback = new TlsScannerCallback(new ScanRequest("localhost", 4433, new String[] { "127.0.0.1:8080" }));
+        callback = new TlsScannerCallback(new ScanRequest("localhost", 4433, new String[] { "127.0.0.1:8080" }),
+                new DebugOutput(0, 0));
         SiteReport report = new SiteReport("google.de", new LinkedList<ProbeType>());
         report.setCertificate(Certificate.EMPTY_CHAIN);
         report.setCipherSuites(new ArrayList<>(Arrays.asList(CipherSuite.values())));
