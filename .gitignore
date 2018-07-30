@@ -2,3 +2,4 @@ target/
 release.properties
 /nbproject/
 apps/
+.idea
