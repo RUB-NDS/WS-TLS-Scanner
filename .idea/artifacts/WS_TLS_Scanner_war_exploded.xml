@@ -1,25 +1,14 @@
 <component name="ArtifactManager">
   <artifact type="exploded-war" name="WS-TLS-Scanner:war exploded">
-    <output-path>$PROJECT_DIR$/target/WS-TLS-Scanner-2.2</output-path>
+    <output-path>$PROJECT_DIR$/target/WS-TLS-Scanner-2.3</output-path>
     <root id="root">
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
           <element id="module-output" name="WS-TLS-Scanner" />
         </element>
         <element id="directory" name="lib">
-          <element id="library" level="project" name="Maven: de.rub.nds.tlsattacker:TLS-Core:2.4" />
-          <element id="library" level="project" name="Maven: de.rub.nds.tlsattacker:Transport:2.4" />
-          <element id="library" level="project" name="Maven: de.rub.nds.tlsattacker:Utils:2.4" />
-          <element id="library" level="project" name="Maven: org.bouncycastle:bcpkix-jdk15on:1.58" />
-          <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk15on:1.58" />
-          <element id="library" level="project" name="Maven: org.apache.commons:commons-lang3:3.6" />
-          <element id="library" level="project" name="Maven: de.rub.nds:ModifiableVariable:2.2" />
-          <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.10" />
-          <element id="library" level="project" name="Maven: com.google.guava:guava:15.0" />
-          <element id="library" level="project" name="Maven: org.javassist:javassist:3.19.0-GA" />
-          <element id="library" level="project" name="Maven: com.google.code.findbugs:annotations:2.0.1" />
-          <element id="library" level="project" name="Maven: de.rub.nds.tlsscanner:TLS-Scanner:2.2" />
-          <element id="library" level="project" name="Maven: de.rub.nds.tlsattacker:Attacks:2.4" />
+          <element id="library" level="project" name="Maven: de.rub.nds.tlsattacker:TLS-Core:2.5" />
+          <element id="library" level="project" name="Maven: de.rub.nds.tlsscanner:TLS-Scanner:2.3" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet:2.26-b03" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.containers:jersey-container-servlet-core:2.26-b03" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.core:jersey-common:2.26-b03" />
@@ -29,6 +18,7 @@
           <element id="library" level="project" name="Maven: org.glassfish.hk2:hk2-utils:2.5.0-b36" />
           <element id="library" level="project" name="Maven: org.glassfish.hk2.external:aopalliance-repackaged:2.5.0-b36" />
           <element id="library" level="project" name="Maven: org.glassfish.hk2:hk2-locator:2.5.0-b36" />
+          <element id="library" level="project" name="Maven: org.javassist:javassist:3.20.0-GA" />
           <element id="library" level="project" name="Maven: org.glassfish.hk2:osgi-resource-locator:1.0.1" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.core:jersey-server:2.26-b03" />
           <element id="library" level="project" name="Maven: org.glassfish.jersey.core:jersey-client:2.26-b03" />
@@ -56,13 +46,15 @@
           <element id="library" level="project" name="Maven: org.apache.logging.log4j:log4j-api:2.7" />
           <element id="library" level="project" name="Maven: org.apache.logging.log4j:log4j-core:2.7" />
           <element id="library" level="project" name="Maven: com.beust:jcommander:1.35" />
+          <element id="library" level="project" name="Maven: org.bouncycastle:bcpkix-jdk15on:1.58" />
+          <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk15on:1.58" />
           <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-debug-jdk15on:1.58" />
           <element id="library" level="project" name="Maven: javax.ws.rs:javax.ws.rs-api:2.1" />
           <element id="library" level="project" name="Maven: javax:javaee-web-api:8.0" />
         </element>
       </element>
       <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/target/WS-TLS-Scanner-2.2/META-INF/MANIFEST.MF" />
+        <element id="file-copy" path="$PROJECT_DIR$/target/WS-TLS-Scanner-2.3/META-INF/MANIFEST.MF" />
       </element>
       <element id="javaee-facet-resources" facet="WS-TLS-Scanner/web/Web" />
     </root>
