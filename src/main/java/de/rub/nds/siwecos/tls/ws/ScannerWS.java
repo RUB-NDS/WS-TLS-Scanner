@@ -35,7 +35,6 @@ public class ScannerWS {
     private UriInfo context;
 
     public ScannerWS() {
-        System.out.println("test");
     }
 
     @POST

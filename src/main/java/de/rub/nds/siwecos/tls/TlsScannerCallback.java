@@ -179,7 +179,7 @@ public class TlsScannerCallback implements Runnable {
                     os.write(json.getBytes("UTF-8"));
                     os.flush();
                 }
-                System.out.println(json);
+                LOGGER.debug(json);
                 http.disconnect();
             } catch (IOException ex) {
                 LOGGER.warn("Failed to callback:" + callback, ex);
