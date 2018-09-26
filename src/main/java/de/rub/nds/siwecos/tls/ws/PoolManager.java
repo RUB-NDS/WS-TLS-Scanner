@@ -34,6 +34,10 @@ public class PoolManager {
 
     private ThreadPoolExecutor service;
 
+    private int parallelProbeThreads = 64;
+
+    private int probeThreads = 9;
+
     private PoolManager() {
         LOGGER.info("Adding BC as a Security Provider");
         Security.addProvider(new BouncyCastleProvider());
@@ -61,5 +65,21 @@ public class PoolManager {
         if (!increasing) {
             LOGGER.warn("You decreased the Threadpool Size! Changes take effect once all Tasks are completed or you restart the service!");
         }
+    }
+
+    public int getParallelProbeThreads() {
+        return parallelProbeThreads;
+    }
+
+    public void setParallelProbeThreads(int parallelProbeThreads) {
+        this.parallelProbeThreads = parallelProbeThreads;
+    }
+
+    public int getProbeThreads() {
+        return probeThreads;
+    }
+
+    public void setProbeThreads(int probeThreads) {
+        this.probeThreads = probeThreads;
     }
 }

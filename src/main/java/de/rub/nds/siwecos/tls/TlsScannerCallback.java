@@ -98,10 +98,10 @@ public class TlsScannerCallback implements Runnable {
             scannerConfig.setDangerLevel(request.getDangerLevel());
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
-            ParallelExecutor executor = new ParallelExecutor(64, 3);
-            List<TlsProbe> phaseOneList = new LinkedList<TlsProbe>();
-            List<TlsProbe> phaseTwoList = new LinkedList<TlsProbe>();
-            List<AfterProbe> afterList = new LinkedList<AfterProbe>();
+            ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3);
+            List<TlsProbe> phaseOneList = new LinkedList<>();
+            List<TlsProbe> phaseTwoList = new LinkedList<>();
+            List<AfterProbe> afterList = new LinkedList<>();
             // phaseOneList.add(new CommonBugProbe(scannerConfig, executor));
             phaseOneList.add(new SniProbe(scannerConfig, executor));
             phaseOneList.add(new CompressionsProbe(scannerConfig, executor));
@@ -132,7 +132,7 @@ public class TlsScannerCallback implements Runnable {
             afterList.add(new Sweet32AfterProbe());
             afterList.add(new FreakAfterProbe());
             afterList.add(new LogjamAfterprobe());
-            TlsScanner scanner = new TlsScanner(scannerConfig, new MultiThreadedScanJobExecutor(15, request.getUrl()),
+            TlsScanner scanner = new TlsScanner(scannerConfig, new MultiThreadedScanJobExecutor(PoolManager.getInstance().getProbeThreads(), request.getUrl()),
                     executor, phaseOneList, phaseTwoList, afterList);
             SiteReport report = scanner.scan();
             ScanResult result = reportToScanResult(report);
