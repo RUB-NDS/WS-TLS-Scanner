@@ -22,21 +22,54 @@ import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
+import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
+import de.rub.nds.tlsscanner.MultiThreadedScanJobExecutor;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.constants.ProbeType;
+import de.rub.nds.tlsscanner.probe.BleichenbacherProbe;
+import de.rub.nds.tlsscanner.probe.CertificateProbe;
+import de.rub.nds.tlsscanner.probe.CiphersuiteOrderProbe;
+import de.rub.nds.tlsscanner.probe.CiphersuiteProbe;
+import de.rub.nds.tlsscanner.probe.CommonBugProbe;
+import de.rub.nds.tlsscanner.probe.CompressionsProbe;
+import de.rub.nds.tlsscanner.probe.Cve20162107Probe;
+import de.rub.nds.tlsscanner.probe.DrownProbe;
+import de.rub.nds.tlsscanner.probe.EarlyCcsProbe;
+import de.rub.nds.tlsscanner.probe.ExtensionProbe;
+import de.rub.nds.tlsscanner.probe.HeartbleedProbe;
+import de.rub.nds.tlsscanner.probe.HttpHeaderProbe;
+import de.rub.nds.tlsscanner.probe.InvalidCurveProbe;
+import de.rub.nds.tlsscanner.probe.MacProbe;
+import de.rub.nds.tlsscanner.probe.NamedCurvesProbe;
+import de.rub.nds.tlsscanner.probe.PaddingOracleProbe;
+import de.rub.nds.tlsscanner.probe.PoodleProbe;
+import de.rub.nds.tlsscanner.probe.ProtocolVersionProbe;
+import de.rub.nds.tlsscanner.probe.RenegotiationProbe;
+import de.rub.nds.tlsscanner.probe.ResumptionProbe;
+import de.rub.nds.tlsscanner.probe.SniProbe;
+import de.rub.nds.tlsscanner.probe.Tls13Probe;
+import de.rub.nds.tlsscanner.probe.TlsPoodleProbe;
+import de.rub.nds.tlsscanner.probe.TlsProbe;
+import de.rub.nds.tlsscanner.probe.TokenbindingProbe;
 import de.rub.nds.tlsscanner.probe.certificate.CertificateReport;
 import de.rub.nds.tlsscanner.report.SiteReport;
+import de.rub.nds.tlsscanner.report.after.AfterProbe;
+import de.rub.nds.tlsscanner.report.after.FreakAfterProbe;
+import de.rub.nds.tlsscanner.report.after.LogjamAfterprobe;
+import de.rub.nds.tlsscanner.report.after.Sweet32AfterProbe;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.Security;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  *
@@ -58,6 +91,7 @@ public class TlsScannerCallback implements Runnable {
 
     @Override
     public void run() {
+        Security.addProvider(new BouncyCastleProvider());
         debugOutput.setLeftQueueAt(System.currentTimeMillis());
         debugOutput.setScanStartedAt(System.currentTimeMillis());
         debugOutput.setTimeInQueue(debugOutput.getLeftQueueAt() - debugOutput.getEnteredQueueAt());
@@ -68,7 +102,42 @@ public class TlsScannerCallback implements Runnable {
             scannerConfig.setDangerLevel(request.getDangerLevel());
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
-            TlsScanner scanner = new TlsScanner(scannerConfig);
+            ParallelExecutor executor = new ParallelExecutor(64, 3);
+            List<TlsProbe> phaseOneList = new LinkedList<TlsProbe>();
+            List<TlsProbe> phaseTwoList = new LinkedList<TlsProbe>();
+            List<AfterProbe> afterList = new LinkedList<AfterProbe>();
+            // phaseOneList.add(new CommonBugProbe(scannerConfig, executor));
+            phaseOneList.add(new SniProbe(scannerConfig, executor));
+            phaseOneList.add(new CompressionsProbe(scannerConfig, executor));
+            // phaseOneList.add(new NamedCurvesProbe(scannerConfig, executor));
+            phaseOneList.add(new CertificateProbe(scannerConfig, executor));
+            phaseOneList.add(new ProtocolVersionProbe(scannerConfig, executor));
+            phaseOneList.add(new CiphersuiteProbe(scannerConfig, executor));
+            phaseOneList.add(new CiphersuiteOrderProbe(scannerConfig, executor));
+            phaseOneList.add(new ExtensionProbe(scannerConfig, executor));
+            phaseOneList.add(new Tls13Probe(scannerConfig, executor));
+            // phaseOneList.add(new TokenbindingProbe(scannerConfig, executor));
+            // phaseOneList.add(new HttpHeaderProbe(scannerConfig, executor));
+            phaseOneList.add(new CertificateProbe(scannerConfig, executor));
+
+            // phaseTwoList.add(new ResumptionProbe(scannerConfig, executor));
+            // phaseTwoList.add(new RenegotiationProbe(scannerConfig,
+            // executor));
+            phaseTwoList.add(new HeartbleedProbe(scannerConfig, executor));
+            phaseTwoList.add(new PaddingOracleProbe(scannerConfig, executor));
+            phaseTwoList.add(new BleichenbacherProbe(scannerConfig, executor));
+            phaseTwoList.add(new PoodleProbe(scannerConfig, executor));
+            phaseTwoList.add(new TlsPoodleProbe(scannerConfig, executor));
+            // phaseTwoList.add(new Cve20162107Probe(scannerConfig, executor));
+            phaseTwoList.add(new InvalidCurveProbe(scannerConfig, executor));
+            // phaseTwoList.add(new DrownProbe(scannerConfig, executor));
+            phaseTwoList.add(new EarlyCcsProbe(scannerConfig, executor));
+            // phaseTwoList.add(new MacProbe(scannerConfig, executor));
+            afterList.add(new Sweet32AfterProbe());
+            afterList.add(new FreakAfterProbe());
+            afterList.add(new LogjamAfterprobe());
+            TlsScanner scanner = new TlsScanner(scannerConfig, new MultiThreadedScanJobExecutor(15, request.getUrl()),
+                    executor, phaseOneList, phaseTwoList, afterList);
             SiteReport report = scanner.scan();
             ScanResult result = reportToScanResult(report);
             LOGGER.info("Finished scanning: " + request.getUrl());
@@ -114,6 +183,7 @@ public class TlsScannerCallback implements Runnable {
                     os.write(json.getBytes("UTF-8"));
                     os.flush();
                 }
+                System.out.println(json);
                 http.disconnect();
             } catch (IOException ex) {
                 LOGGER.warn("Failed to callback:" + callback, ex);

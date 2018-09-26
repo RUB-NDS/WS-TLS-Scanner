@@ -12,7 +12,6 @@ package de.rub.nds.siwecos.tls.ws;
 import de.rub.nds.siwecos.tls.DebugManager;
 import de.rub.nds.siwecos.tls.TlsScannerCallback;
 import java.net.URISyntaxException;
-import java.security.Security;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.apache.logging.log4j.LogManager;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  *
@@ -37,6 +35,7 @@ public class ScannerWS {
     private UriInfo context;
 
     public ScannerWS() {
+        System.out.println("test");
     }
 
     @POST
