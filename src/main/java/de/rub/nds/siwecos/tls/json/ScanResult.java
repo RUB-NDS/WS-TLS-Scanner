@@ -22,6 +22,7 @@ public class ScanResult {
 
     private String name;
 
+    private String version;
     private boolean hasError;
 
     private TranslateableMessage errorMessage;
@@ -36,10 +37,19 @@ public class ScanResult {
     public ScanResult(String name, boolean hasError, TranslateableMessage errorMessage, int score,
             List<TestResult> tests) {
         this.name = name;
+        this.version = "2.4";
         this.hasError = hasError;
         this.errorMessage = errorMessage;
         this.score = score;
         this.tests = tests;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public DebugOutput getDebugOutput() {
