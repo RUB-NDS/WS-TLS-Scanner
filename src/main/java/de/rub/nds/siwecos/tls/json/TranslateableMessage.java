@@ -20,14 +20,14 @@ public class TranslateableMessage {
 
     private String placeholder;
 
-    private List<ValuePair> values;
+    private List<TestInfo> values;
 
-    public TranslateableMessage(String placeholder, List<ValuePair> values) {
+    public TranslateableMessage(String placeholder, List<TestInfo> values) {
         this.placeholder = placeholder;
         this.values = values;
     }
 
-    public TranslateableMessage(String placeholder, ValuePair value) {
+    public TranslateableMessage(String placeholder, TestInfo value) {
         this.placeholder = placeholder;
         this.values = new LinkedList<>();
         values.add(value);
@@ -41,11 +41,11 @@ public class TranslateableMessage {
         this.placeholder = placeholder;
     }
 
-    public List<ValuePair> getValues() {
+    public List<TestInfo> getValues() {
         return values;
     }
 
-    public void setValues(List<ValuePair> values) {
+    public void setValues(List<TestInfo> values) {
         this.values = values;
     }
 }

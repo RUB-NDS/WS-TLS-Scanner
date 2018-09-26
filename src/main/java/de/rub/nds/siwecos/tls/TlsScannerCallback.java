@@ -11,10 +11,15 @@ package de.rub.nds.siwecos.tls;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.rub.nds.siwecos.tls.json.CertificateTestInfo;
+import de.rub.nds.siwecos.tls.json.CiphersuitesTestInfo;
+import de.rub.nds.siwecos.tls.json.DateTestInfo;
+import de.rub.nds.siwecos.tls.json.HashTestInfo;
+import de.rub.nds.siwecos.tls.json.HostTestInfo;
 import de.rub.nds.siwecos.tls.json.ScanResult;
 import de.rub.nds.siwecos.tls.json.TestResult;
 import de.rub.nds.siwecos.tls.json.TranslateableMessage;
-import de.rub.nds.siwecos.tls.json.ValuePair;
+import de.rub.nds.siwecos.tls.json.TestInfo;
 import de.rub.nds.siwecos.tls.ws.DebugOutput;
 import de.rub.nds.siwecos.tls.ws.PoolManager;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
@@ -31,27 +36,18 @@ import de.rub.nds.tlsscanner.probe.BleichenbacherProbe;
 import de.rub.nds.tlsscanner.probe.CertificateProbe;
 import de.rub.nds.tlsscanner.probe.CiphersuiteOrderProbe;
 import de.rub.nds.tlsscanner.probe.CiphersuiteProbe;
-import de.rub.nds.tlsscanner.probe.CommonBugProbe;
 import de.rub.nds.tlsscanner.probe.CompressionsProbe;
-import de.rub.nds.tlsscanner.probe.Cve20162107Probe;
-import de.rub.nds.tlsscanner.probe.DrownProbe;
 import de.rub.nds.tlsscanner.probe.EarlyCcsProbe;
 import de.rub.nds.tlsscanner.probe.ExtensionProbe;
 import de.rub.nds.tlsscanner.probe.HeartbleedProbe;
-import de.rub.nds.tlsscanner.probe.HttpHeaderProbe;
 import de.rub.nds.tlsscanner.probe.InvalidCurveProbe;
-import de.rub.nds.tlsscanner.probe.MacProbe;
-import de.rub.nds.tlsscanner.probe.NamedCurvesProbe;
 import de.rub.nds.tlsscanner.probe.PaddingOracleProbe;
 import de.rub.nds.tlsscanner.probe.PoodleProbe;
 import de.rub.nds.tlsscanner.probe.ProtocolVersionProbe;
-import de.rub.nds.tlsscanner.probe.RenegotiationProbe;
-import de.rub.nds.tlsscanner.probe.ResumptionProbe;
 import de.rub.nds.tlsscanner.probe.SniProbe;
 import de.rub.nds.tlsscanner.probe.Tls13Probe;
 import de.rub.nds.tlsscanner.probe.TlsPoodleProbe;
 import de.rub.nds.tlsscanner.probe.TlsProbe;
-import de.rub.nds.tlsscanner.probe.TokenbindingProbe;
 import de.rub.nds.tlsscanner.probe.certificate.CertificateReport;
 import de.rub.nds.tlsscanner.report.SiteReport;
 import de.rub.nds.tlsscanner.report.after.AfterProbe;
@@ -292,12 +288,12 @@ public class TlsScannerCallback implements Runnable {
     }
 
     private TranslateableMessage getHttpsResponse(SiteReport report) {
-        return new TranslateableMessage("HTTPS_RESPONSE", new ValuePair("HOST", report.getHost()));
+        return new TranslateableMessage("HTTPS_RESPONSE", new HostTestInfo(report.getHost()));
 
     }
 
     private TranslateableMessage getHttpsSupported(SiteReport report) {
-        return new TranslateableMessage("HTTPS_SUPPORTED", new ValuePair("HOST", report.getHost()));
+        return new TranslateableMessage("HTTPS_SUPPORTED", new HostTestInfo(report.getHost()));
     }
 
     private TestResult getCertificateExpired(SiteReport report) {
@@ -312,9 +308,9 @@ public class TlsScannerCallback implements Runnable {
             }
         }
         if (tempDate != null) {
-            List<ValuePair> pairList = new LinkedList<>();
-            pairList.add(new ValuePair("DATE", DateFormat.getDateInstance().format(tempDate)));
-            pairList.add(new ValuePair("CERTIFICATE", certString));
+            List<TestInfo> pairList = new LinkedList<>();
+            pairList.add(new DateTestInfo(DateFormat.getDateInstance().format(tempDate)));
+            pairList.add(new CertificateTestInfo(certString));
             messageList.add(new TranslateableMessage("EXPIRED", pairList));
         } else {
             messageList = null;
@@ -336,9 +332,9 @@ public class TlsScannerCallback implements Runnable {
             }
         }
         if (tempDate != null) {
-            List<ValuePair> pairList = new LinkedList<>();
-            pairList.add(new ValuePair("DATE", DateFormat.getDateInstance().format(tempDate)));
-            pairList.add(new ValuePair("CERTIFICATE", certString));
+            List<TestInfo> pairList = new LinkedList<>();
+            pairList.add(new DateTestInfo(DateFormat.getDateInstance().format(tempDate)));
+            pairList.add(new CertificateTestInfo(certString));
             messageList.add(new TranslateableMessage("NOT_YET_VALID", pairList));
         } else {
             messageList = null;
@@ -369,9 +365,9 @@ public class TlsScannerCallback implements Runnable {
                         || certReport.getSignatureAndHashAlgorithm().getHashAlgorithm() == HashAlgorithm.SHA1) {
                     hashAlgo = certReport.getSignatureAndHashAlgorithm().getHashAlgorithm().name();
                     certString = certReport.toString();
-                    List<ValuePair> valuePairList = new LinkedList<>();
-                    valuePairList.add(new ValuePair("HASH", hashAlgo));
-                    valuePairList.add(new ValuePair("CERTIFICATE", certString));
+                    List<TestInfo> valuePairList = new LinkedList<>();
+                    valuePairList.add(new HashTestInfo(hashAlgo));
+                    valuePairList.add(new CertificateTestInfo(certString));
                     messageList.add(new TranslateableMessage("HASH_ALGO", valuePairList));
 
                     break;
@@ -400,17 +396,6 @@ public class TlsScannerCallback implements Runnable {
         }
     }
 
-    /*
-     * private TestResult getCertificateWeakSignAlgorithm(SiteReport report) {
-     * boolean vulnerable = report.getCertificateHasWeakSignAlgorithm() ==
-     * Boolean.TRUE; String certString = null; List<TranslateableMessage>
-     * messageList = new LinkedList<>(); if (vulnerable) { messageList.add(new
-     * TranslateableMessage("SIGN", new ValuePair("SIGN", certString))); }
-     * return new TestResult("CERTIFICATE_WEAK_SIGN_ALGO",
-     * report.getCertificateHasWeakSignAlgorithm() == null, null,
-     * report.getCertificateHasWeakSignAlgorithm() ? 0 : 100, vulnerable ?
-     * "critical" : "hidden", null); }
-     */
     private TestResult getSupportsAnon(SiteReport report) {
         List<TranslateableMessage> messageList = new LinkedList<>();
         List<CipherSuite> suiteList = new LinkedList<>();
@@ -429,12 +414,12 @@ public class TlsScannerCallback implements Runnable {
                 !(report.getSupportsAnonCiphers() == Boolean.TRUE) ? "success" : "fatal", messageList);
     }
 
-    private ValuePair convertSuiteList(List<CipherSuite> suiteList) {
+    private TestInfo convertSuiteList(List<CipherSuite> suiteList) {
         StringBuilder builder = new StringBuilder();
         for (CipherSuite suite : suiteList) {
             builder.append(suite.name()).append(" ");
         }
-        return new ValuePair("CIPHERSUITES", builder.toString());
+        return new CiphersuitesTestInfo(builder.toString());
     }
 
     private TestResult getSupportsExport(SiteReport report) {
