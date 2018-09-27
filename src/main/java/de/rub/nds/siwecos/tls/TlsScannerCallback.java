@@ -29,6 +29,7 @@ import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlsscanner.MultiThreadedScanJobExecutor;
+import de.rub.nds.tlsscanner.ScanJobExecutor;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.constants.ProbeType;
@@ -132,9 +133,12 @@ public class TlsScannerCallback implements Runnable {
             afterList.add(new Sweet32AfterProbe());
             afterList.add(new FreakAfterProbe());
             afterList.add(new LogjamAfterprobe());
-            TlsScanner scanner = new TlsScanner(scannerConfig, new MultiThreadedScanJobExecutor(PoolManager.getInstance().getProbeThreads(), request.getUrl()),
+            ScanJobExecutor scanJobExecutor = new MultiThreadedScanJobExecutor(PoolManager.getInstance().getProbeThreads(), request.getUrl());
+            TlsScanner scanner = new TlsScanner(scannerConfig, scanJobExecutor,
                     executor, phaseOneList, phaseTwoList, afterList);
             SiteReport report = scanner.scan();
+            executor.shutdown();
+            scanJobExecutor.shutdown();
             ScanResult result = reportToScanResult(report);
             LOGGER.info("Finished scanning: " + request.getUrl());
             debugOutput.setScanFinisedAt(System.currentTimeMillis());
@@ -317,7 +321,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", messageList);
+                : "critical", messageList);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
