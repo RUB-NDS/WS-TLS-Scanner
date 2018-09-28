@@ -7,14 +7,11 @@
  *  http://www.apache.org/licenses/LICENSE-2.0
  *
  */
-package de.rub.nds.siwecos.tls;
+package de.rub.nds.siwecos.tls.json;
 
-/**
- *
- * @author Robert Merget - robert.merget@rub.de
- */
-public class Main {
+public abstract class TestInfo {
 
-    public static void main(String args[]) {
+    public TestInfo() {
     }
+
 }

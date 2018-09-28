@@ -14,10 +14,15 @@
  */
 package de.rub.nds.siwecos.tls.ws;
 
+import static de.rub.nds.siwecos.tls.ws.ScannerWS.LOGGER;
+import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
+import de.rub.nds.tlsscanner.ScanJobExecutor;
+import java.security.Security;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 /**
  *
@@ -29,9 +34,15 @@ public class PoolManager {
 
     private ThreadPoolExecutor service;
 
+    private int parallelProbeThreads = 64;
+
+    private int probeThreads = 9;
+
     private PoolManager() {
+        LOGGER.info("Adding BC as a Security Provider");
+        Security.addProvider(new BouncyCastleProvider());
         LOGGER.info("Starting thread pool");
-        service = new ThreadPoolExecutor(2, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>());
+        service = new ThreadPoolExecutor(10, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>());
     }
 
     public static PoolManager getInstance() {
@@ -45,5 +56,30 @@ public class PoolManager {
 
     public ThreadPoolExecutor getService() {
         return service;
+    }
+
+    public void setPoolSize(int poolsize) {
+        boolean increasing = poolsize > service.getPoolSize();
+        service.setCorePoolSize(poolsize);
+        service.setMaximumPoolSize(poolsize);
+        if (!increasing) {
+            LOGGER.warn("You decreased the Threadpool Size! Changes take effect once all Tasks are completed or you restart the service!");
+        }
+    }
+
+    public int getParallelProbeThreads() {
+        return parallelProbeThreads;
+    }
+
+    public void setParallelProbeThreads(int parallelProbeThreads) {
+        this.parallelProbeThreads = parallelProbeThreads;
+    }
+
+    public int getProbeThreads() {
+        return probeThreads;
+    }
+
+    public void setProbeThreads(int probeThreads) {
+        this.probeThreads = probeThreads;
     }
 }

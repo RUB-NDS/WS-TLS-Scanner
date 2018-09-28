@@ -9,6 +9,9 @@
  */
 package de.rub.nds.siwecos.tls.json;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import de.rub.nds.siwecos.tls.ws.DebugOutput;
 import java.util.List;
 
 /**
@@ -19,6 +22,7 @@ public class ScanResult {
 
     private String name;
 
+    private String version;
     private boolean hasError;
 
     private TranslateableMessage errorMessage;
@@ -27,13 +31,33 @@ public class ScanResult {
 
     private List<TestResult> tests;
 
+    @JsonInclude(Include.NON_EMPTY)
+    private DebugOutput debugOutput;
+
     public ScanResult(String name, boolean hasError, TranslateableMessage errorMessage, int score,
             List<TestResult> tests) {
         this.name = name;
+        this.version = "2.4";
         this.hasError = hasError;
         this.errorMessage = errorMessage;
         this.score = score;
         this.tests = tests;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public DebugOutput getDebugOutput() {
+        return debugOutput;
+    }
+
+    public void setDebugOutput(DebugOutput debugOutput) {
+        this.debugOutput = debugOutput;
     }
 
     public String getName() {

@@ -27,7 +27,7 @@ public class TestResult {
 
     private String scoreType;
 
-    private List<TranslateableMessage> testDetails;
+    private TranslateableMessage[] testDetails;
 
     public TestResult(String name, boolean hasError, TranslateableMessage errorMessage, int score, String scoreType,
             List<TranslateableMessage> testDetails) {
@@ -36,7 +36,11 @@ public class TestResult {
         this.errorMessage = errorMessage;
         this.score = score;
         this.scoreType = scoreType;
-        this.testDetails = testDetails;
+        if (testDetails != null) {
+            this.testDetails = testDetails.toArray(new TranslateableMessage[testDetails.size()]);
+        } else {
+            this.testDetails = null;
+        }
     }
 
     public String getName() {
@@ -79,11 +83,11 @@ public class TestResult {
         this.scoreType = scoreType;
     }
 
-    public List<TranslateableMessage> getTestDetails() {
+    public TranslateableMessage[] getTestDetails() {
         return testDetails;
     }
 
-    public void setTestDetails(List<TranslateableMessage> testDetails) {
+    public void setTestDetails(TranslateableMessage[] testDetails) {
         this.testDetails = testDetails;
     }
 }
