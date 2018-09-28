@@ -68,7 +68,8 @@ public class ApplicationConfig extends Application {
             DebugManager.getInstance().setDebugEnabled(Boolean.parseBoolean(p.getProperty("tlsscanner.debugMode")));
         }
         System.out.println("################### WS-TLS ###################");
-        System.out.println("Properties are defined in a file called config.txt in the tomcat bin folder, or can be set as enviroment Variables");
+        System.out
+                .println("Properties are defined in a file called config.txt in the tomcat bin folder, or can be set as enviroment Variables");
         System.out.println("tlsscanner.probeThreads=" + PoolManager.getInstance().getProbeThreads());
         System.out.println("tlsscanner.parallelProbeThreads=" + PoolManager.getInstance().getParallelProbeThreads());
         System.out

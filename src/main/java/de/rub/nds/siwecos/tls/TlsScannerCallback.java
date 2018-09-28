@@ -97,6 +97,7 @@ public class TlsScannerCallback implements Runnable {
 
             ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
             scannerConfig.setDangerLevel(request.getDangerLevel());
+            scannerConfig.setNoProgressbar(true);
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
             ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3);
@@ -133,9 +134,10 @@ public class TlsScannerCallback implements Runnable {
             afterList.add(new Sweet32AfterProbe());
             afterList.add(new FreakAfterProbe());
             afterList.add(new LogjamAfterprobe());
-            ScanJobExecutor scanJobExecutor = new MultiThreadedScanJobExecutor(PoolManager.getInstance().getProbeThreads(), request.getUrl());
-            TlsScanner scanner = new TlsScanner(scannerConfig, scanJobExecutor,
-                    executor, phaseOneList, phaseTwoList, afterList);
+            ScanJobExecutor scanJobExecutor = new MultiThreadedScanJobExecutor(PoolManager.getInstance()
+                    .getProbeThreads(), request.getUrl());
+            TlsScanner scanner = new TlsScanner(scannerConfig, scanJobExecutor, executor, phaseOneList, phaseTwoList,
+                    afterList);
             SiteReport report = scanner.scan();
             executor.shutdown();
             scanJobExecutor.shutdown();
@@ -321,7 +323,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                : "critical", messageList);
+                        : "critical", messageList);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
