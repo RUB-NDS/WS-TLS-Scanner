@@ -5,14 +5,14 @@ WS-TLS-Scanner is a Webservice created by the Chair for Network and Data Securit
 In order to compile and use WS-TLS-Scanner, you need to have Java installed, as well as [TLS-Attacker](https://github.com/RUB-NDS/TLS-Attacker), [ModifiableVariables](https://github.com/RUB-NDS/ModifiableVariable) and the [TLS-Scanner](https://github.com/RUB-NDS/TLS-Scanner)
 
 ```bash
-$ cd TLS-Scanner
-$ ./mvnw clean package
+$ cd WS-TLS-Scanner
+$ mvn clean package
 
 ```
 
 For hints on installing the required libraries checkout the corresponding GitHub repositories.
 
-**Please note:**  *In order to run this tool you need TLS-Attacker 2.3*
+**Please note:**  *In order to run this tool you need TLS-Attacker 2.6*
 
 # Running
 In order to run WS-TLS-Scanner you need to deploy the .war file from the target/ folder to your favourite java application server (eg. Glassfish, Tomcat ...). After that the webservice should be up and running and can be called by sending a POST like
@@ -27,7 +27,7 @@ In order to run WS-TLS-Scanner you need to deploy the .war file from the target/
 ```
 to
 ```
-http://127.0.0.1:8080/WS-TLS-Scanner-2.0/start
+http://127.0.0.1:8080/WS-TLS-Scanner-2.4/start
 ```
 
 or 
@@ -270,7 +270,7 @@ An example output may look like this:
 | CRIME_VULNERABLE                    | Checks if the Server is vulnerable to the CRIME attack                   |
 | SWEET32_VULNERABLE                  | Checks if the Server is vulnerable to the SWEET32 attack                 |
 | HEARTBLEED_VULNERABLE               | Checks if the Server is vulnerable to the Heartbleed attack              |
-| CVE20162107_VULNERABLE              | Checks if the Server is vulnerable to CVE-2016-2107 	                 |
+| CVE20162107_VULNERABLE              | Checks if the Server is vulnerable to CVE-2016-2107 	                   |
 
 
 
