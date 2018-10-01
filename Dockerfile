@@ -2,6 +2,8 @@ FROM tomcat:latest
 RUN apt update && apt-get upgrade -y && apt install -y git maven libgnutls30 libcurl3-gnutls default-jdk
 WORKDIR /src
 RUN dpkg -l | grep libgnutls
+
+ARG CACHE_DATE=2018-10-1
 RUN git clone https://github.com/RUB-NDS/TLS-Attacker.git
 RUN git clone https://github.com/RUB-NDS/TLS-Scanner.git
 RUN git clone https://github.com/SIWECOS/WS-TLS-Scanner.git
