@@ -14,5 +14,4 @@ RUN git pull
 RUN mvn clean install -DskipTests=true
 RUN cp target/WS-TLS-Scanner-*.war /usr/local/tomcat/webapps/ROOT.war
 RUN rm /usr/local/tomcat/webapps/ROOT -r -f
-RUN cp target/WS-TLS-Scanner-* /usr/local/tomcat/webapps/ROOT -r
 EXPOSE 8080
