@@ -1,19 +1,8 @@
-language: php
-
-php:
-  - "7.1"
-
-services:
-  - mysql
+language: java
 
 cache:
   directories:
     - "$HOME/google-cloud-sdk/"
-
-addons:
-  apt:
-    sources:
-      - mysql-5.7-trusty
 
 dist: trusty
 
