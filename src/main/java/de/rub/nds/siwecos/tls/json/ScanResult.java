@@ -37,7 +37,7 @@ public class ScanResult {
     public ScanResult(String name, boolean hasError, TranslateableMessage errorMessage, int score,
             List<TestResult> tests) {
         this.name = name;
-        this.version = "2.4";
+        this.version = "2.5";
         this.hasError = hasError;
         this.errorMessage = errorMessage;
         this.score = score;

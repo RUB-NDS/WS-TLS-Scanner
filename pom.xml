@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.rub.nds</groupId>
     <artifactId>WS-TLS-Scanner</artifactId>
-    <version>2.4</version>
+    <version>2.5</version>
     <packaging>war</packaging>
     <name>WS-TLS-Scanner</name>
     <properties>
