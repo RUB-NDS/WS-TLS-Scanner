@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>de.rub.nds</groupId>
     <artifactId>WS-TLS-Scanner</artifactId>
-    <version>2.4</version>
+    <version>2.5</version>
     <packaging>war</packaging>
     <name>WS-TLS-Scanner</name>
     <properties>
@@ -18,12 +18,12 @@
         <dependency>
             <groupId>de.rub.nds.tlsattacker</groupId>
             <artifactId>TLS-Core</artifactId>
-            <version>2.6</version>
+            <version>2.7</version>
         </dependency>
         <dependency>
             <groupId>de.rub.nds.tlsscanner</groupId>
             <artifactId>TLS-Scanner</artifactId>
-            <version>2.4</version>
+            <version>2.5</version>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
