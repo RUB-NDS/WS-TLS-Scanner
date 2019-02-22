@@ -27,6 +27,7 @@ import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
+import de.rub.nds.tlsattacker.core.workflow.NamedThreadFactory;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlsscanner.MultiThreadedScanJobExecutor;
 import de.rub.nds.tlsscanner.ScanJobExecutor;
@@ -86,13 +87,24 @@ public class TlsScannerCallback implements Runnable {
         this.debugOutput = debugOutput;
     }
 
+    private String callbackUrlsToId(String[] urls) {
+        StringBuilder builder = new StringBuilder();
+        for (String s : urls) {
+            builder.append(s);
+        }
+        return "" + builder.toString().hashCode();
+    }
+
     @Override
     public void run() {
+
+        Thread.currentThread().setName(Thread.currentThread().getName() + "-" + request.getUrl());
         Security.addProvider(new BouncyCastleProvider());
         debugOutput.setLeftQueueAt(System.currentTimeMillis());
         debugOutput.setScanStartedAt(System.currentTimeMillis());
         debugOutput.setTimeInQueue(debugOutput.getLeftQueueAt() - debugOutput.getEnteredQueueAt());
-        LOGGER.info("Scanning: " + request.getUrl());
+        String id = callbackUrlsToId(request.getCallbackurls());
+        LOGGER.info("Scanning: " + request.getUrl() + " - " + id);
         try {
 
             ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
@@ -100,7 +112,8 @@ public class TlsScannerCallback implements Runnable {
             scannerConfig.setNoProgressbar(true);
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
-            ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3);
+            ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3,
+                    new NamedThreadFactory(request.getUrl() + "-"));
             List<TlsProbe> phaseOneList = new LinkedList<>();
             List<TlsProbe> phaseTwoList = new LinkedList<>();
             List<AfterProbe> afterList = new LinkedList<>();
@@ -135,7 +148,7 @@ public class TlsScannerCallback implements Runnable {
             afterList.add(new FreakAfterProbe());
             afterList.add(new LogjamAfterprobe());
             ScanJobExecutor scanJobExecutor = new MultiThreadedScanJobExecutor(PoolManager.getInstance()
-                    .getProbeThreads(), request.getUrl());
+                    .getProbeThreads(), id);
             TlsScanner scanner = new TlsScanner(scannerConfig, scanJobExecutor, executor, phaseOneList, phaseTwoList,
                     afterList);
             SiteReport report = scanner.scan();
@@ -323,7 +336,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", messageList);
+                : "critical", messageList);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {

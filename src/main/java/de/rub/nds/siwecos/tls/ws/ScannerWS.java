@@ -35,6 +35,7 @@ public class ScannerWS {
     private UriInfo context;
 
     public ScannerWS() {
+        Thread.currentThread().setName("Webservice-Thread");
     }
 
     @POST

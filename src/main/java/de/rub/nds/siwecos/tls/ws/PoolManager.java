@@ -15,6 +15,7 @@
 package de.rub.nds.siwecos.tls.ws;
 
 import static de.rub.nds.siwecos.tls.ws.ScannerWS.LOGGER;
+import de.rub.nds.tlsattacker.core.workflow.NamedThreadFactory;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlsscanner.ScanJobExecutor;
 import java.security.Security;
@@ -42,7 +43,8 @@ public class PoolManager {
         LOGGER.info("Adding BC as a Security Provider");
         Security.addProvider(new BouncyCastleProvider());
         LOGGER.info("Starting thread pool");
-        service = new ThreadPoolExecutor(10, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>());
+        service = new ThreadPoolExecutor(10, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>(),
+                new NamedThreadFactory("Worker-"));
     }
 
     public static PoolManager getInstance() {
