@@ -168,6 +168,8 @@ public class TlsScannerCallback implements Runnable {
         } catch (Throwable T) {
             LOGGER.warn("Failed to scan:" + request.getUrl());
             T.printStackTrace();
+        } finally {
+            Thread.currentThread().setName(Thread.currentThread().getName().replace("-" + request.getUrl(), ""));
         }
     }
 
