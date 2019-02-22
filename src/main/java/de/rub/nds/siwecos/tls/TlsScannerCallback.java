@@ -92,7 +92,7 @@ public class TlsScannerCallback implements Runnable {
         for (String s : urls) {
             builder.append(s);
         }
-        return "" + builder.toString().hashCode();
+        return "" + Math.abs(builder.toString().hashCode());
     }
 
     @Override
@@ -116,7 +116,7 @@ public class TlsScannerCallback implements Runnable {
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
             ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3,
-                    new NamedThreadFactory(request.getUrl() + "-"));
+                    new NamedThreadFactory("" + id));
             List<TlsProbe> phaseOneList = new LinkedList<>();
             List<TlsProbe> phaseTwoList = new LinkedList<>();
             List<AfterProbe> afterList = new LinkedList<>();

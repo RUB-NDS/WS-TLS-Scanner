@@ -44,7 +44,7 @@ public class PoolManager {
         Security.addProvider(new BouncyCastleProvider());
         LOGGER.info("Starting thread pool");
         service = new ThreadPoolExecutor(10, 10, 10, TimeUnit.MINUTES, new LinkedBlockingDeque<Runnable>(),
-                new NamedThreadFactory("Worker-"));
+                new NamedThreadFactory("Worker"));
     }
 
     public static PoolManager getInstance() {
