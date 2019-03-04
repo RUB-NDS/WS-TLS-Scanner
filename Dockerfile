@@ -3,8 +3,8 @@ RUN apt update && apt-get upgrade -y && apt install -y git maven libgnutls30 lib
 WORKDIR /src
 RUN dpkg -l | grep libgnutls
 
-RUN git clone --branch 2.7 https://github.com/RUB-NDS/TLS-Attacker.git
-RUN git clone --branch 2.5 https://github.com/RUB-NDS/TLS-Scanner.git
+RUN git clone --branch 2.8 https://github.com/RUB-NDS/TLS-Attacker.git
+RUN git clone --branch 2.6 https://github.com/RUB-NDS/TLS-Scanner.git
 RUN git clone --branch develop https://github.com/SIWECOS/WS-TLS-Scanner.git
 WORKDIR /src/TLS-Attacker
 RUN mvn clean install -DskipTests=true
