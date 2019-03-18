@@ -6,7 +6,7 @@ RUN git clone --branch 2.8 https://github.com/RUB-NDS/TLS-Attacker.git
 RUN git clone --branch 2.6.1 https://github.com/RUB-NDS/TLS-Scanner.git
 RUN git clone --branch develop https://github.com/SIWECOS/WS-TLS-Scanner.git
 WORKDIR /src/TLS-Attacker
-RUN mvn clean install
+RUN mvn clean install -DskipTests=true
 WORKDIR /src/TLS-Scanner
 RUN mvn clean install -DskipTests=true
 WORKDIR /src/WS-TLS-Scanner
