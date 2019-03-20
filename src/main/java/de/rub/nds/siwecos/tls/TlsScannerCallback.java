@@ -170,6 +170,7 @@ public class TlsScannerCallback implements Runnable {
             answer(result);
         } catch (Throwable T) {
             LOGGER.error("Failed to scan:" + request.getUrl(), T);
+            answer(new ScanResult("TLS", true, null, 0, new LinkedList<TestResult>()));
         } finally {
             Thread.currentThread().setName(Thread.currentThread().getName().replace("-" + request.getUrl(), ""));
         }
