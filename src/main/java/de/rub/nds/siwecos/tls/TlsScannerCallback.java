@@ -67,6 +67,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -168,7 +169,7 @@ public class TlsScannerCallback implements Runnable {
             }
             answer(result);
         } catch (Throwable T) {
-            LOGGER.warn("Failed to scan:" + request.getUrl(), T);
+            LOGGER.error("Failed to scan:" + request.getUrl(), T);
         } finally {
             Thread.currentThread().setName(Thread.currentThread().getName().replace("-" + request.getUrl(), ""));
         }
@@ -180,8 +181,7 @@ public class TlsScannerCallback implements Runnable {
         try {
             json = ow.writeValueAsString(result);
         } catch (JsonProcessingException ex) {
-            LOGGER.warn("Could not convert to json");
-            ex.printStackTrace();
+            LOGGER.error("Could not convert to json", ex);
         }
         return json;
     }
@@ -213,10 +213,10 @@ public class TlsScannerCallback implements Runnable {
     }
 
     public ScanResult reportToScanResult(SiteReport report) {
-        if (report.getServerIsAlive() != Boolean.TRUE) {
+        if (!Objects.equals(report.getServerIsAlive(), Boolean.TRUE)) {
             return new ScanResult("TLS", true, getHttpsResponse(report), 0, new LinkedList<TestResult>());
         }
-        if (report.getSupportsSslTls() != Boolean.TRUE) {
+        if (!Objects.equals(report.getSupportsSslTls(), Boolean.TRUE)) {
             return new ScanResult("TLS", true, getHttpsSupported(report), 0, new LinkedList<TestResult>());
         }
         List<TestResult> resultList = new LinkedList<>();
