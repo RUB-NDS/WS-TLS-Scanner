@@ -11,6 +11,7 @@ package de.rub.nds.siwecos.tls;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.rub.nds.siwecos.tls.constants.ScanJobType;
 import de.rub.nds.siwecos.tls.json.CertificateTestInfo;
 import de.rub.nds.siwecos.tls.json.CiphersuitesTestInfo;
 import de.rub.nds.siwecos.tls.json.DateTestInfo;
@@ -24,9 +25,12 @@ import de.rub.nds.siwecos.tls.ws.DebugOutput;
 import de.rub.nds.siwecos.tls.ws.PoolManager;
 import de.rub.nds.siwecos.tls.ws.ScanRequest;
 import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
+import de.rub.nds.tlsattacker.core.config.delegate.Delegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
+import de.rub.nds.tlsattacker.core.config.delegate.StarttlsDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
+import de.rub.nds.tlsattacker.core.constants.StarttlsType;
 import de.rub.nds.tlsattacker.core.workflow.NamedThreadFactory;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlsscanner.MultiThreadedScanJobExecutor;
@@ -84,9 +88,12 @@ public class TlsScannerCallback implements Runnable {
 
     private DebugOutput debugOutput;
 
-    public TlsScannerCallback(ScanRequest request, DebugOutput debugOutput) {
+    private ScanJobType type;
+
+    public TlsScannerCallback(ScanRequest request, DebugOutput debugOutput, ScanJobType type) {
         this.request = request;
         this.debugOutput = debugOutput;
+        this.type = type;
     }
 
     private String callbackUrlsToId(String[] urls) {
@@ -116,7 +123,16 @@ public class TlsScannerCallback implements Runnable {
             scannerConfig.setDangerLevel(request.getDangerLevel());
             scannerConfig.setScanDetail(ScannerDetail.QUICK);
             scannerConfig.setNoProgressbar(true);
+            StarttlsDelegate startlsDelegate = (StarttlsDelegate) scannerConfig.getDelegate(StarttlsDelegate.class);
+            if (type == ScanJobType.IMAP) {
+                startlsDelegate.setStarttlsType(StarttlsType.IMAP);
+            } else if (type == ScanJobType.POP3) {
+                startlsDelegate.setStarttlsType(StarttlsType.POP3);
+            } else if (type == ScanJobType.SMTP) {
+                startlsDelegate.setStarttlsType(StarttlsType.SMTP);
+            }
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
+
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
             ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3,
                     new NamedThreadFactory("" + id));

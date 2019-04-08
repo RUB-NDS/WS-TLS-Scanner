@@ -11,6 +11,7 @@ package de.rub.nds.siwecos.tls.ws;
 
 import de.rub.nds.siwecos.tls.DebugManager;
 import de.rub.nds.siwecos.tls.TlsScannerCallback;
+import de.rub.nds.siwecos.tls.constants.ScanJobType;
 import java.net.URISyntaxException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -39,15 +40,93 @@ public class ScannerWS {
     }
 
     @POST
-    @Path("/start")
+    @Path("/https")
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response startScan(ScanRequest request) throws URISyntaxException {
+    public Response startHttpsScan(ScanRequest request) throws URISyntaxException {
         LOGGER.info("Received a request to scan: " + request.getUrl());
         PoolManager
                 .getInstance()
                 .getService()
                 .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
-                        .getQueue().size(), System.currentTimeMillis())));
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.HTTPS));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("/pop3s")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startPop3sScan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
+        PoolManager
+                .getInstance()
+                .getService()
+                .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.POP3S));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("/imaps")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startImapsScan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
+        PoolManager
+                .getInstance()
+                .getService()
+                .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.IMAPS));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("/smtps")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startSmtpsScan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
+        PoolManager
+                .getInstance()
+                .getService()
+                .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.SMTPS));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("/pop3")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startPop3Scan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
+        PoolManager
+                .getInstance()
+                .getService()
+                .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.POP3));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("/imap")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startImapScan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
+        PoolManager
+                .getInstance()
+                .getService()
+                .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.IMAP));
+        return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
+    }
+
+    @POST
+    @Path("/smtp")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response startSmtpScan(ScanRequest request) throws URISyntaxException {
+        LOGGER.info("Received a request to scan: " + request.getUrl());
+        PoolManager
+                .getInstance()
+                .getService()
+                .submit(new TlsScannerCallback(request, new DebugOutput(PoolManager.getInstance().getService()
+                        .getQueue().size(), System.currentTimeMillis()), ScanJobType.SMTP));
         return Response.status(Response.Status.OK).entity("Success").type(MediaType.TEXT_PLAIN_TYPE).build();
     }
 
