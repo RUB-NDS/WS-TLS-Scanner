@@ -27,12 +27,14 @@ import de.rub.nds.tlsattacker.core.config.delegate.ClientDelegate;
 import de.rub.nds.tlsattacker.core.config.delegate.GeneralDelegate;
 import de.rub.nds.tlsattacker.core.constants.CipherSuite;
 import de.rub.nds.tlsattacker.core.constants.HashAlgorithm;
+import de.rub.nds.tlsattacker.core.workflow.NamedThreadFactory;
 import de.rub.nds.tlsattacker.core.workflow.ParallelExecutor;
 import de.rub.nds.tlsscanner.MultiThreadedScanJobExecutor;
 import de.rub.nds.tlsscanner.ScanJobExecutor;
 import de.rub.nds.tlsscanner.TlsScanner;
 import de.rub.nds.tlsscanner.config.ScannerConfig;
 import de.rub.nds.tlsscanner.constants.ProbeType;
+import de.rub.nds.tlsscanner.constants.ScannerDetail;
 import de.rub.nds.tlsscanner.probe.BleichenbacherProbe;
 import de.rub.nds.tlsscanner.probe.CertificateProbe;
 import de.rub.nds.tlsscanner.probe.CiphersuiteOrderProbe;
@@ -65,6 +67,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import org.apache.logging.log4j.LogManager;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -86,21 +89,37 @@ public class TlsScannerCallback implements Runnable {
         this.debugOutput = debugOutput;
     }
 
+    private String callbackUrlsToId(String[] urls) {
+        StringBuilder builder = new StringBuilder();
+        for (String s : urls) {
+            builder.append(s);
+        }
+        return "" + Math.abs(builder.toString().hashCode());
+    }
+
     @Override
     public void run() {
+
+        Thread.currentThread().setName(Thread.currentThread().getName() + "-" + request.getUrl());
         Security.addProvider(new BouncyCastleProvider());
         debugOutput.setLeftQueueAt(System.currentTimeMillis());
         debugOutput.setScanStartedAt(System.currentTimeMillis());
         debugOutput.setTimeInQueue(debugOutput.getLeftQueueAt() - debugOutput.getEnteredQueueAt());
-        LOGGER.info("Scanning: " + request.getUrl());
+        String id = callbackUrlsToId(request.getCallbackurls());
+        LOGGER.info("Scanning: " + request.getUrl() + " - " + id);
+        for (String s : request.getCallbackurls()) {
+            LOGGER.info("\tCallbackUrls: " + s);
+        }
         try {
 
             ScannerConfig scannerConfig = new ScannerConfig(new GeneralDelegate());
             scannerConfig.setDangerLevel(request.getDangerLevel());
+            scannerConfig.setScanDetail(ScannerDetail.QUICK);
             scannerConfig.setNoProgressbar(true);
             ClientDelegate delegate = (ClientDelegate) scannerConfig.getDelegate(ClientDelegate.class);
             delegate.setHost(request.getUrl().replace("https://", "").replace("http://", ""));
-            ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3);
+            ParallelExecutor executor = new ParallelExecutor(PoolManager.getInstance().getParallelProbeThreads(), 3,
+                    new NamedThreadFactory("" + id));
             List<TlsProbe> phaseOneList = new LinkedList<>();
             List<TlsProbe> phaseTwoList = new LinkedList<>();
             List<AfterProbe> afterList = new LinkedList<>();
@@ -135,7 +154,7 @@ public class TlsScannerCallback implements Runnable {
             afterList.add(new FreakAfterProbe());
             afterList.add(new LogjamAfterprobe());
             ScanJobExecutor scanJobExecutor = new MultiThreadedScanJobExecutor(PoolManager.getInstance()
-                    .getProbeThreads(), request.getUrl());
+                    .getProbeThreads(), id);
             TlsScanner scanner = new TlsScanner(scannerConfig, scanJobExecutor, executor, phaseOneList, phaseTwoList,
                     afterList);
             SiteReport report = scanner.scan();
@@ -150,8 +169,10 @@ public class TlsScannerCallback implements Runnable {
             }
             answer(result);
         } catch (Throwable T) {
-            LOGGER.warn("Failed to scan:" + request.getUrl());
-            T.printStackTrace();
+            LOGGER.error("Failed to scan:" + request.getUrl(), T);
+            answer(new ScanResult("TLS", true, null, 0, new LinkedList<TestResult>()));
+        } finally {
+            Thread.currentThread().setName(Thread.currentThread().getName().replace("-" + request.getUrl(), ""));
         }
     }
 
@@ -161,8 +182,7 @@ public class TlsScannerCallback implements Runnable {
         try {
             json = ow.writeValueAsString(result);
         } catch (JsonProcessingException ex) {
-            LOGGER.warn("Could not convert to json");
-            ex.printStackTrace();
+            LOGGER.error("Could not convert to json", ex);
         }
         return json;
     }
@@ -194,10 +214,10 @@ public class TlsScannerCallback implements Runnable {
     }
 
     public ScanResult reportToScanResult(SiteReport report) {
-        if (report.getServerIsAlive() != Boolean.TRUE) {
+        if (!Objects.equals(report.getServerIsAlive(), Boolean.TRUE)) {
             return new ScanResult("TLS", true, getHttpsResponse(report), 0, new LinkedList<TestResult>());
         }
-        if (report.getSupportsSslTls() != Boolean.TRUE) {
+        if (!Objects.equals(report.getSupportsSslTls(), Boolean.TRUE)) {
             return new ScanResult("TLS", true, getHttpsSupported(report), 0, new LinkedList<TestResult>());
         }
         List<TestResult> resultList = new LinkedList<>();
@@ -323,7 +343,7 @@ public class TlsScannerCallback implements Runnable {
         }
         return new TestResult("CERTIFICATE_EXPIRED", report.getCertificateExpired() == null, null,
                 report.getCertificateExpired() ? 0 : 100, !report.getCertificateExpired() == Boolean.TRUE ? "success"
-                        : "critical", messageList);
+                : "critical", messageList);
     }
 
     private TestResult getCertificateNotValidYet(SiteReport report) {
